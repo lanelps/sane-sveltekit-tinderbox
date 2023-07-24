@@ -29,3 +29,31 @@ export const sections = `
         },
     },
 `;
+
+export const internalLink = `
+    _id,
+    _key,
+    _type,
+    title,
+    heading,
+    reference -> {
+      slug {
+        current,
+      },
+    },
+`;
+
+export const externalLink = `
+    _id,
+    _key,
+    _type,
+    title,
+    heading,
+    url,
+    newWindow,
+`;
+
+export const links = `
+    _type == "linkInternal" => {${internalLink}},
+    _type == "linkExternal" => {${externalLink}},
+`;

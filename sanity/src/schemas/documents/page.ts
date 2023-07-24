@@ -6,6 +6,7 @@ export default defineType({
   name: 'page',
   title: 'Page',
   type: 'document',
+  icon: () => '📄',
   fields: [
     defineField({
       name: 'title',

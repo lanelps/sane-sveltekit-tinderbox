@@ -1,6 +1,9 @@
 <script>
 	import navActive from '~stores/navActive';
 	import { onMount } from 'svelte';
+	import Link from '~components/Link.svelte';
+
+	export let links;
 
 	onMount(() => {
 		navActive.close();
@@ -12,9 +15,11 @@
 
 	<nav class="hidden sm-t:block">
 		<ul class="w-full flex justify-between gap-x-8">
-			<li><a href="/">Home</a></li>
-			<li><a href="/about">About</a></li>
-			<li><a href="/contact">Contact</a></li>
+			{#each links as link (link._key)}
+				<li>
+					<Link {link} />
+				</li>
+			{/each}
 		</ul>
 	</nav>
 
@@ -24,9 +29,11 @@
 		aria-hidden={!$navActive}
 	>
 		<ul class="w-full flex flex-col justify-between gap-x-8">
-			<li><a href="/">Home</a></li>
-			<li><a href="/about">About</a></li>
-			<li><a href="/contact">Contact</a></li>
+			{#each links as link (link._key)}
+				<li>
+					<Link {link} />
+				</li>
+			{/each}
 		</ul>
 	</nav>
 

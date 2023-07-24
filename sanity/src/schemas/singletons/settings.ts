@@ -6,6 +6,10 @@ export default defineType({
   type: 'document',
   groups: [
     {
+      name: 'navigation',
+      title: 'Navigation',
+    },
+    {
       name: 'seo',
       title: 'SEO',
     },
@@ -19,6 +23,25 @@ export default defineType({
     },
   ],
   fields: [
+    defineField({
+      name: 'menu',
+      title: 'Menu',
+      type: 'object',
+      group: 'navigation',
+      options: {
+        collapsed: false,
+        collapsible: true,
+      },
+      fields: [
+        // Links
+        defineField({
+          name: 'links',
+          title: 'Links',
+          type: 'array',
+          of: [{type: 'linkInternal'}, {type: 'linkExternal'}],
+        }),
+      ],
+    }),
     // SEO
     defineField({
       name: 'seo',

@@ -15,12 +15,23 @@ const sections = [exampleSection] as any[]
 
 // objects
 import altImage from './objects/altImage'
+import linkExternal from './objects/linkExternal'
+import linkInternal from './objects/linkInternal'
 import portableText from './objects/portableText'
 import redirect from './objects/redirect'
 import scriptInline from './objects/scriptInline'
 import scriptSrc from './objects/scriptSrc'
 import seoSettings from './objects/seo/settings'
 
-const objects = [altImage, portableText, redirect, scriptInline, scriptSrc, seoSettings] as any[]
+const objects = [
+  altImage,
+  linkExternal,
+  linkInternal,
+  portableText,
+  redirect,
+  scriptInline,
+  scriptSrc,
+  seoSettings,
+] as any[]
 
 export const schemaTypes = [...singletons, ...documents, ...sections, ...objects]
