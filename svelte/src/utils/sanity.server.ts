@@ -1,18 +1,18 @@
 import { PUBLIC_SANITY_PROJECT_ID, PUBLIC_SANITY_DATASET } from '$env/static/public';
 
-import sanityClient from '@sanity/client';
+import { createClient } from '@sanity/client';
 import imageUrlBuilder from '@sanity/image-url';
 
-export const client = sanityClient({
+export const client = createClient({
 	projectId: PUBLIC_SANITY_PROJECT_ID,
 	dataset: PUBLIC_SANITY_DATASET,
-	apiVersion: '2022-01-12',
+	apiVersion: '2023-07-01',
 	useCdn: false
 });
 
 const imageBuilder = imageUrlBuilder(client);
 
-export const getImageDimensions: GetImageDimensions = (image) => {
+export const getImageDimensions = (image) => {
 	if (!image?.asset?._ref) {
 		throw new Error(`getImageDimensions: image.asset._ref is undefined`);
 	}
@@ -37,7 +37,7 @@ const DEFAULT_MIN_STEP = 0.1;
 const DEFAULT_WIDTH_STEPS = [400, 600, 850, 1000, 1150];
 const DEFAULT_FULL_WIDTH_STEPS = [360, 414, 768, 1280, 1366, 1440, 1536, 1728, 1920];
 
-export const getImageProps: GetImageProps = ({
+export const getImageProps = ({
 	image,
 	maxWidth: userMaxWidth,
 	minimumWidthStep = DEFAULT_MIN_STEP,
