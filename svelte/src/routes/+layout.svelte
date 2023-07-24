@@ -6,8 +6,6 @@
 	import Header from '~components/Header.svelte';
 
 	export let data;
-
-	console.log(`layout data`, data);
 </script>
 
 <svelte:window on:keydown={navActive.close} />
