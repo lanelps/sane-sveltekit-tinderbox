@@ -1,11 +1,15 @@
 <script>
+	import { afterNavigate } from '$app/navigation';
 	import '../styles/index.css';
 
 	import navActive from '~stores/navActive';
-
 	import Header from '~components/Header.svelte';
 
 	export let data;
+
+	afterNavigate(() => {
+		navActive.close();
+	});
 </script>
 
 <svelte:window on:keydown={navActive.close} />
