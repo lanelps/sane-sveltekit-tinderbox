@@ -7,11 +7,23 @@ export default defineType({
   title: 'Page',
   type: 'document',
   icon: () => '📄',
+  groups: [
+    {
+      name: 'content',
+      title: 'Content',
+    },
+    {
+      name: 'seo',
+      title: 'SEO',
+    },
+  ],
   fields: [
     defineField({
       name: 'title',
       title: 'Title',
       type: 'string',
+      validation: (Rule) => Rule.required(),
+      group: 'content',
     }),
     defineField({
       name: 'slug',
@@ -21,7 +33,15 @@ export default defineType({
         source: 'title',
         maxLength: 96,
       },
+      validation: (Rule) => Rule.required(),
+      group: 'content',
     }),
     sections,
+    defineField({
+      name: 'seo',
+      title: 'SEO',
+      type: 'seo.page',
+      group: 'seo',
+    }),
   ],
 })

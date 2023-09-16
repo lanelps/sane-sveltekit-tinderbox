@@ -9,4 +9,5 @@ export default defineField({
       type: 'exampleSection',
     }),
   ],
+  group: 'content',
 })

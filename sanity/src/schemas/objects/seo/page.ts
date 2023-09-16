@@ -1,7 +1,7 @@
 import {defineField, defineType} from 'sanity'
 
 export default defineType({
-  name: 'seo.settings',
+  name: 'seo.page',
   title: 'SEO',
   type: 'object',
   fields: [
@@ -24,12 +24,6 @@ export default defineType({
       type: `array`,
       of: [{type: `string`}],
       options: {layout: `tags`},
-    }),
-    defineField({
-      name: 'favicon',
-      title: 'Favicon',
-      type: 'image',
-      description: 'Image should have a 1:1 aspect ratio, no larger that 512x512 pixels',
     }),
     defineField({
       name: `image`,

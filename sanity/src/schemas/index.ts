@@ -21,6 +21,7 @@ import portableText from './objects/portableText'
 import redirect from './objects/redirect'
 import scriptInline from './objects/scriptInline'
 import scriptSrc from './objects/scriptSrc'
+import seoPage from './objects/seo/page'
 import seoSettings from './objects/seo/settings'
 
 const objects = [
@@ -31,6 +32,7 @@ const objects = [
   redirect,
   scriptInline,
   scriptSrc,
+  seoPage,
   seoSettings,
 ] as any[]
 
