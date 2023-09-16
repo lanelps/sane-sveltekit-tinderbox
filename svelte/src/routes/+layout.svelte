@@ -9,8 +9,7 @@
 
 	export let data;
 
-	$: ({ settings } = $page.data);
-	$: ({ title, seo } = $page.data);
+	$: ({ title, seo, settings } = $page.data);
 
 	afterNavigate(() => {
 		navActive.close();
