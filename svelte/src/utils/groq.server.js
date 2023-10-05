@@ -2,7 +2,8 @@ export const image = `
     alt,
     asset {
         _ref
-    }
+    },
+    crop,
 `;
 
 export const video = `
