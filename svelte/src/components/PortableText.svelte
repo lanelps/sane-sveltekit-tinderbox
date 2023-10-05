@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { PortableText } from '@portabletext/svelte';
-	import Normal from '~components/blocks/Normal.svelte';
-	import Link from '~components/blocks/Link.svelte';
+	import Normal from '~components/contentBlocks/Normal.svelte';
+	import Link from '~components/contentBlocks/Link.svelte';
 
 	export let value;
 </script>
