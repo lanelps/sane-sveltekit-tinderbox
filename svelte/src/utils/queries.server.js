@@ -1,22 +1,6 @@
 import { links, sections } from '~utils/groq.server';
 import { client } from '~utils/sanity.server';
 
-export const fetchHome = async () => {
-	const home = client.fetch(
-		`*[_type == "page" && slug.current == "/"][0] {
-            title,
-            slug {
-                current
-            },
-            ${sections}
-        }`
-	);
-
-	if (!home) throw new Error('Erorr fetching home data');
-
-	return home;
-};
-
 export const fetchSettings = async () => {
 	const settings = client.fetch(
 		`*[_type == "settings"][0] {

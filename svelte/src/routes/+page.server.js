@@ -1,9 +1,9 @@
 import { parseSections } from '~utils/data.server';
-import { fetchHome } from '~utils/queries.server';
+import { fetchPage } from '~utils/queries.server';
 
 export const load = async () => {
 	try {
-		const data = await fetchHome();
+		const data = await fetchPage('/');
 
 		return {
 			...data,
