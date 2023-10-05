@@ -2,6 +2,9 @@ import { parseSections } from '~utils/data.server';
 import { fetchPage } from '~utils/queries.server';
 
 export const load = async ({ params }) => {
+	// if we load the home page, return
+	if (params.slug === 'favicon.ico') return;
+
 	try {
 		const data = await fetchPage(params.slug);
 
