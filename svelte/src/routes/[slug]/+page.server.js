@@ -1,5 +1,6 @@
-import { client, getImageProps } from '~utils/sanity.server';
-import { sections } from '~utils/groq';
+import { parseSection } from '~utils/data.server';
+import { sections } from '~utils/groq.server';
+import { client } from '~utils/sanity.server';
 
 export const load = async ({ params }) => {
 	const data = await client.fetch(
@@ -16,22 +17,7 @@ export const load = async ({ params }) => {
 	if (data) {
 		return {
 			...data,
-			sections: data?.sections?.map((section) => {
-				if (section?.image) {
-					return {
-						...section,
-						image: {
-							...section.image,
-							url: getImageProps({
-								image: section.image,
-								maxWidth: 1920
-							})
-						}
-					};
-				}
-
-				return section;
-			})
+			sections: parseSection(data?.sections)
 		};
 	}
 

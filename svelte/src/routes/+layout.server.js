@@ -1,5 +1,6 @@
-import { client, getImageProps } from '~utils/sanity.server';
-import { links } from '~utils/groq';
+import { parseSEO } from '../utils/data.server';
+import { links } from '~utils/groq.server';
+import { client } from '~utils/sanity.server';
 
 export const load = async () => {
 	const settings = await client.fetch(
@@ -38,21 +39,7 @@ export const load = async () => {
 	return {
 		settings: {
 			...settings,
-			seo: {
-				...settings.seo,
-				favicon: {
-					url: getImageProps({
-						image: settings.seo.favicon,
-						maxWidth: 512
-					})
-				},
-				image: {
-					url: getImageProps({
-						image: settings.seo.image,
-						maxWidth: 1920
-					})
-				}
-			}
+			seo: parseSEO(settings?.seo)
 		}
 	};
 };
