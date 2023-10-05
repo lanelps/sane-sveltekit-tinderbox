@@ -1,33 +1,60 @@
-import { PUBLIC_SANITY_PROJECT_ID, PUBLIC_SANITY_DATASET } from '$env/static/public';
+import { SANITY_PROJECT_ID, SANITY_DATASET } from '$env/static/private';
 
 import { createClient } from '@sanity/client';
 import imageUrlBuilder from '@sanity/image-url';
 
 export const client = createClient({
-	projectId: PUBLIC_SANITY_PROJECT_ID,
-	dataset: PUBLIC_SANITY_DATASET,
+	projectId: SANITY_PROJECT_ID,
+	dataset: SANITY_DATASET,
 	apiVersion: '2023-07-01',
 	useCdn: false
 });
 
 const imageBuilder = imageUrlBuilder(client);
 
+// For all image variations, we'll use an auto format and prevent scaling it over its max dimensions
+export const urlFor = (imgRef) => {
+	return imageBuilder.image(imgRef).fit('max');
+};
+
 export const getImageDimensions = (image) => {
-	if (!image?.asset?._ref) {
-		throw new Error(`getImageDimensions: image.asset._ref is undefined`);
-	}
+	let width, height, aspectRatio;
 
-	const dimensions = image?.asset?._ref?.split('-')[2];
-	const [width, height] = dimensions.split('x').map(Number);
+	const { asset, dimensions } = image;
 
-	if (!width || !height || Number.isNaN(width) || Number.isNaN(height)) {
-		throw new Error(`getImageDimensions: Image width or height is either undefined or NaN`);
+	// if the image has a crop, return the crop's aspect ratio calculated from the cropped image dimensions
+	// crop is in percentages, so we remove that from the image dimensions to get the cropped width and height
+	if (image?.crop) {
+		// compute the cropped image's area
+		const croppedWidth = Math.floor(width * (1 - (image?.crop?.right + image?.crop?.left)));
+		const croppedHeight = Math.floor(height * (1 - (image?.crop?.top + image?.crop?.bottom)));
+
+		width = croppedWidth;
+		height = croppedHeight;
+		aspectRatio = croppedWidth / croppedHeight;
+	} else {
+		// if no image dimensions object, calculate from asset ref
+		// otherwise use the image dimensions object
+		if (!dimensions?.width || !dimensions?.height) {
+			const [w, h] = asset?._ref?.split('-')[2].split('x').map(Number);
+			width = w;
+			height = h;
+			aspectRatio = w / h;
+
+			if (!width || !height || !aspectRatio) {
+				throw new Error(`getImageDimensions: Image width, height is either undefined or NaN`);
+			}
+		} else {
+			width = dimensions.width;
+			height = dimensions.height;
+			aspectRatio = dimensions.width / dimensions.height;
+		}
 	}
 
 	return {
 		width,
 		height,
-		aspectRatio: width / height
+		aspectRatio
 	};
 };
 
@@ -44,15 +71,15 @@ export const getImageProps = ({
 	customWidthSteps,
 	sizes
 }) => {
-	if (!image?.asset?._ref) throw new Error(`getImageProps: image has no _ref`);
+	if (!image?.asset?._ref) {
+		console.warn(`getImageProps: image has no _ref`);
+		return;
+	}
 
 	const imageDimensions = getImageDimensions(image);
 	if (!imageDimensions) throw new Error(`getImageDimensions erorr: Could not get image dimensions`);
 
 	const maxWidth = typeof userMaxWidth === 'number' ? userMaxWidth : LARGEST_VIEWPORT;
-
-	// For all image variations, we'll use an auto format and prevent scaling it over its max dimensions
-	const builder = imageBuilder.image(image).fit('max').auto('format');
 
 	// Width sizes the image could assume
 	const baseSizes = [
@@ -92,17 +119,16 @@ export const getImageProps = ({
 
 	return {
 		// Use the original image as the `src` for the <img>
-		src: builder.width(maxWidth).url(),
-
+		src: urlFor(image).width(maxWidth).url(),
 		// Build a `{URL} {SIZE}w, ...` string for the srcset
-		srcset: retinaSizes.map((size) => `${builder.width(size).url()} ${size}w`).join(', '),
+		srcset: retinaSizes.map((size) => `${urlFor(image).width(size).url()} ${size}w`).join(', '),
 		sizes:
 			userMaxWidth === '100vw'
 				? '100vw'
 				: sizes || `(max-width: ${maxWidth}px) 100vw, ${maxWidth}px`,
-
 		// Let's also tell the browser what's the size of the image so it can calculate aspect ratios
 		width: retinaSizes[0],
-		height: retinaSizes[0] / imageDimensions?.aspectRatio
+		height: retinaSizes[0] / imageDimensions?.aspectRatio,
+		aspectRatio: imageDimensions?.aspectRatio
 	};
 };
