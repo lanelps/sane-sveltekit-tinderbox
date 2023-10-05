@@ -1,8 +1,8 @@
 import { links, sections } from '~utils/groq.server';
 import { client } from '~utils/sanity.server';
 
-export const fetchHome = async () =>
-	client.fetch(
+export const fetchHome = async () => {
+	const home = client.fetch(
 		`*[_type == "page" && slug.current == "/"][0] {
             title,
             slug {
@@ -12,8 +12,13 @@ export const fetchHome = async () =>
         }`
 	);
 
-export const fetchSettings = async () =>
-	client.fetch(
+	if (!home) throw new Error('Erorr fetching home data');
+
+	return home;
+};
+
+export const fetchSettings = async () => {
+	const settings = client.fetch(
 		`*[_type == "settings"][0] {
             menu {
                 links[] {
@@ -39,8 +44,13 @@ export const fetchSettings = async () =>
         }`
 	);
 
-export const fetchPage = async (slug) =>
-	client.fetch(
+	if (!settings) throw new Error('Error fetching settings data');
+
+	return settings;
+};
+
+export const fetchPage = async (slug) => {
+	const page = client.fetch(
 		`*[_type == "page" && slug.current == $slug][0] {
             title,
             slug {
@@ -50,3 +60,8 @@ export const fetchPage = async (slug) =>
         }`,
 		{ slug }
 	);
+
+	if (!page) throw new Error('Error fetching page data');
+
+	return page;
+};
