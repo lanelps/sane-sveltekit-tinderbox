@@ -1,27 +1,18 @@
 import { parseSections } from '~utils/data.server';
-import { sections } from '~utils/groq.server';
-import { client } from '~utils/sanity.server';
+import { fetchHome } from '~utils/queries.server';
 
 export const load = async () => {
-	const data = await client.fetch(
-		`*[_type == "page" && slug.current == "/"][0] {
-		title,
-		slug {
-            current
-        },
-		${sections}
-	}`
-	);
+	const data = await fetchHome();
 
-	if (data) {
+	if (!data) {
 		return {
-			...data,
-			sections: parseSections(data?.sections)
+			status: 500,
+			body: new Error('Internal Server Error')
 		};
 	}
 
 	return {
-		status: 500,
-		body: new Error('Internal Server Error')
+		...data,
+		sections: parseSections(data?.sections)
 	};
 };

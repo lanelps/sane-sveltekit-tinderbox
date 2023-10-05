@@ -1,33 +1,8 @@
-import { parseSEO } from '../utils/data.server';
-import { links } from '~utils/groq.server';
-import { client } from '~utils/sanity.server';
+import { parseSEO } from '~utils/data.server';
+import { fetchSettings } from '~utils/queries.server';
 
 export const load = async () => {
-	const settings = await client.fetch(
-		`*[_type == "settings"][0] {
-            menu {
-                links[] {
-                    ${links}
-                }
-            },
-            seo {
-				title,
-				description,
-				favicon {
-					asset {
-						_ref
-					}
-				},
-				image {
-					asset {
-						_ref
-					}
-				}
-			},
-            scripts,
-            redirects,
-        }`
-	);
+	const settings = await fetchSettings();
 
 	if (!settings) {
 		return {
