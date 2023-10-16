@@ -18,37 +18,36 @@ export const urlFor = (imgRef) => {
 };
 
 export const getImageDimensions = (image) => {
+	const { asset, crop } = image;
 	let width, height, aspectRatio;
 
-	const { asset, dimensions } = image;
+	const [w, h] = asset._ref.split('-')[2].split('x').map(Number);
+		width = w;
+		height = h;
+		aspectRatio = width / height;
 
-	// if the image has a crop, return the crop's aspect ratio calculated from the cropped image dimensions
-	// crop is in percentages, so we remove that from the image dimensions to get the cropped width and height
-	if (image?.crop) {
-		// compute the cropped image's area
-		const croppedWidth = Math.floor(width * (1 - (image?.crop?.right + image?.crop?.left)));
-		const croppedHeight = Math.floor(height * (1 - (image?.crop?.top + image?.crop?.bottom)));
+	if (crop) {
+		// if the image has a crop, return the crop's aspect ratio calculated from the cropped image dimensions
+		// crop is in percentages, so we remove that from the image dimensions to get the cropped width and height
+		const croppedWidth = width * (1 - (crop?.right + crop?.left));
+		const croppedHeight = height * (1 - (crop?.top + crop?.bottom));
 
 		width = croppedWidth;
 		height = croppedHeight;
 		aspectRatio = croppedWidth / croppedHeight;
-	} else {
-		// if no image dimensions object, calculate from asset ref
-		// otherwise use the image dimensions object
-		if (!dimensions?.width || !dimensions?.height) {
-			const [w, h] = asset?._ref?.split('-')[2].split('x').map(Number);
-			width = w;
-			height = h;
-			aspectRatio = w / h;
+	}
 
-			if (!width || !height || !aspectRatio) {
-				throw new Error(`getImageDimensions: Image width, height is either undefined or NaN`);
-			}
-		} else {
-			width = dimensions.width;
-			height = dimensions.height;
-			aspectRatio = dimensions.width / dimensions.height;
-		}
+	if (
+		!width ||
+		!height ||
+		!aspectRatio ||
+		Number.isNaN(width) ||
+		Number.isNaN(height) ||
+		Number.isNaN(aspectRatio)
+	) {
+		throw new Error(
+			`getImageDimensions: Image width, height or aspect ratio is either undefined or NaN`
+		);
 	}
 
 	return {
@@ -77,7 +76,6 @@ export const getImageProps = ({
 	}
 
 	const imageDimensions = getImageDimensions(image);
-	if (!imageDimensions) throw new Error(`getImageDimensions erorr: Could not get image dimensions`);
 
 	const maxWidth = typeof userMaxWidth === 'number' ? userMaxWidth : LARGEST_VIEWPORT;
 
