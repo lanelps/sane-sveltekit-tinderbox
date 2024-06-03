@@ -1,5 +1,5 @@
-import { links, sections } from '~utils/groq.server';
-import { client } from '~utils/sanity.server';
+import { links, sections } from '$lib/utils/groq.server';
+import { client } from '$lib/utils/sanity.server';
 
 export const fetchSettings = async () => {
 	const settings = client.fetch(

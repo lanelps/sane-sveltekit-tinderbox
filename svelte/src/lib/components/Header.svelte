@@ -1,7 +1,7 @@
 <script>
-	import navActive from '~stores/navActive';
+	import navActive from '$lib/stores/navActive';
 	import { onMount } from 'svelte';
-	import Link from '~components/Link.svelte';
+	import Link from '$lib/components/Link.svelte';
 
 	export let links;
 

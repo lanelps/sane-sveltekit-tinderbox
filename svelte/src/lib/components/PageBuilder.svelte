@@ -1,5 +1,5 @@
 <script>
-	import ExampleSection from '~components/sections/Example.svelte';
+	import ExampleSection from '$lib/components/sections/Example.svelte';
 
 	export let sections;
 

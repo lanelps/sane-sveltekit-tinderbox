@@ -1,11 +1,11 @@
 <script>
 	import { afterNavigate } from '$app/navigation';
 	import { page } from '$app/stores';
-	import '../styles/index.css';
+	import '$lib/styles/index.css';
 
-	import navActive from '~stores/navActive';
-	import Header from '~components/Header.svelte';
-	import Seo from '~components/Seo.svelte';
+	import navActive from '$lib/stores/navActive';
+	import Header from '$lib/components/Header.svelte';
+	import Seo from '$lib/components/Seo.svelte';
 
 	export let data;
 

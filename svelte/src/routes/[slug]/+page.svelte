@@ -1,5 +1,5 @@
 <script>
-	import PageBuilder from '~components/PageBuilder.svelte';
+	import PageBuilder from '$lib/components/PageBuilder.svelte';
 	export let data;
 </script>
 

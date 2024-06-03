@@ -1,5 +1,5 @@
-import { parseSections } from '~utils/data.server';
-import { fetchPage } from '~utils/queries.server';
+import { parseSections } from '$lib/utils/data.server';
+import { fetchPage } from '$lib/utils/queries.server';
 
 export const load = async () => {
 	try {

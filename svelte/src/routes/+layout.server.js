@@ -1,5 +1,5 @@
-import { parseSEO } from '~utils/data.server';
-import { fetchSettings } from '~utils/queries.server';
+import { parseSEO } from '$lib/utils/data.server';
+import { fetchSettings } from '$lib/utils/queries.server';
 
 export const load = async () => {
 	try {

@@ -1,4 +1,4 @@
-import { getImageProps } from '~utils/sanity.server';
+import { getImageProps } from '$lib/utils/sanity.server';
 
 export const parseSections = (sections) =>
 	sections?.map((section) => {
