@@ -24,7 +24,7 @@
 	<Header links={data?.settings?.menu?.links} />
 
 	{#key data?.url}
-		<main class="relative w-full h-full grid grid-cols-4 sm-t:grid-cols-12 gap-6 px-6">
+		<main class="relative h-full grid-main">
 			<slot />
 		</main>
 	{/key}
