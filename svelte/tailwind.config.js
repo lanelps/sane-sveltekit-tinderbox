@@ -1,7 +1,7 @@
 /** @type {import('tailwindcss').Config} */
-const defaultTheme = require(`tailwindcss/defaultTheme`);
+import defaultTheme from 'tailwindcss/defaultTheme';
 
-import { breakpoints, createTailWindGrid, spacing } from '$lib/utils/tailwind';
+import { breakpoints, createTailWindGrid, spacing } from './src/lib/utils/tailwind';
 
 const { gridSpan, gridColumns } = createTailWindGrid();
 
