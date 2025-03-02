@@ -1,12 +1,10 @@
 import {defineField, defineType} from 'sanity'
 
-import sections from '../../utils/sectionsField'
-
 export default defineType({
-  name: 'page',
-  title: 'Page',
+  name: 'homePage',
+  title: 'Home',
   type: 'document',
-  icon: () => '📄',
+  icon: () => `🏠`,
   groups: [
     {
       name: 'content',
@@ -25,23 +23,16 @@ export default defineType({
       validation: (Rule) => Rule.required(),
       group: 'content',
     }),
-    defineField({
-      name: 'slug',
-      title: 'Slug',
-      type: 'slug',
-      options: {
-        source: 'title',
-        maxLength: 96,
-      },
-      validation: (Rule) => Rule.required(),
-      group: 'content',
-    }),
-    sections,
+    // SEO
     defineField({
       name: 'seo',
       title: 'SEO',
       type: 'seo.page',
       group: 'seo',
+      options: {
+        collapsed: false,
+        collapsible: true,
+      },
     }),
   ],
 })

@@ -9,17 +9,21 @@ export default defineType({
   },
   fields: [
     defineField({
+      name: 'mobile',
+      title: 'Mobile Image',
+      type: 'image',
+      description: 'Optional. If not set, the main image will be used for mobile.',
+      options: {
+        collapsible: true,
+        collapsed: true,
+      },
+    }),
+    defineField({
       name: 'alt',
       title: 'Alternative text',
       type: 'string',
       description: 'Important for SEO and accessiblity.',
     }),
-    // defineField({
-    //   name: 'mobile',
-    //   title: 'Mobile Image',
-    //   type: 'image',
-    //   description: 'Image for mobile devices. Cropping is currently not possible.',
-    // }),
   ],
   preview: {
     select: {

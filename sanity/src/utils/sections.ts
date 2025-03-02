@@ -4,10 +4,10 @@ export default defineField({
   name: 'sections',
   title: 'Sections',
   type: 'array',
+  group: 'content',
   of: [
     defineArrayMember({
-      type: 'exampleSection',
+      type: 'example.section',
     }),
   ],
-  group: 'content',
 })

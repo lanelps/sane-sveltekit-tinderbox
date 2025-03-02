@@ -7,9 +7,9 @@ export default defineType({
   fields: [
     defineField({
       name: 'title',
-      title: 'Site title',
+      title: 'Page Title',
       type: 'string',
-      validation: (Rule) => Rule.required(),
+      description: 'Defaults to the projects title',
     }),
     defineField({
       name: 'description',

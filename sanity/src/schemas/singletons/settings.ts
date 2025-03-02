@@ -4,11 +4,8 @@ export default defineType({
   name: 'settings',
   title: 'Settings',
   type: 'document',
+  icon: () => `⚙️`,
   groups: [
-    {
-      name: 'navigation',
-      title: 'Navigation',
-    },
     {
       name: 'seo',
       title: 'SEO',
@@ -17,31 +14,8 @@ export default defineType({
       name: 'scripts',
       title: 'External Scripts',
     },
-    {
-      name: 'redirects',
-      title: 'Redirects',
-    },
   ],
   fields: [
-    defineField({
-      name: 'menu',
-      title: 'Menu',
-      type: 'object',
-      group: 'navigation',
-      options: {
-        collapsed: false,
-        collapsible: true,
-      },
-      fields: [
-        // Links
-        defineField({
-          name: 'links',
-          title: 'Links',
-          type: 'array',
-          of: [{type: 'linkInternal'}, {type: 'linkExternal'}],
-        }),
-      ],
-    }),
     // SEO
     defineField({
       name: 'seo',
@@ -70,18 +44,11 @@ export default defineType({
       description:
         'Add external scripts to the <head> of the document. For example, Google Analytics. These fields are not sanitized, so be careful what you put in here.',
     }),
-
-    // Redirects
-    defineField({
-      name: 'redirects',
-      title: 'Redirects',
-      type: 'array',
-      of: [
-        defineArrayMember({
-          type: 'redirect',
-        }),
-      ],
-      group: 'redirects',
-    }),
   ],
+  preview: {
+    select: {},
+    prepare: () => ({
+      title: 'Settings',
+    }),
+  },
 })

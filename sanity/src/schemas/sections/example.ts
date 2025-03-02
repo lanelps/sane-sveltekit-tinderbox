@@ -1,26 +1,25 @@
 import {defineField, defineType} from 'sanity'
 
 export default defineType({
-  name: 'exampleSection',
-  title: 'Example',
+  name: 'example.section',
+  title: 'Example Section',
   type: 'object',
   fields: [
     defineField({
-      name: 'title',
-      title: 'Title',
+      name: 'heading',
+      title: 'Heading',
       type: 'string',
     }),
     defineField({
-      name: 'body',
-      title: 'Body',
+      name: 'content',
+      title: 'Content',
       type: 'portableText',
     }),
   ],
 
   preview: {
     select: {
-      title: 'title',
-      subtitle: 'body',
+      title: 'heading',
     },
   },
 })

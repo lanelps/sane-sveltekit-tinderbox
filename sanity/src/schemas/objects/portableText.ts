@@ -10,16 +10,7 @@ export default defineType({
       title: 'Block',
       type: 'block',
 
-      styles: [
-        {title: `Normal`, value: `normal`},
-        {title: 'Heading 1', value: 'h1'},
-        {title: 'Heading 2', value: 'h2'},
-        {title: 'Heading 3', value: 'h3'},
-        {title: 'Heading 4', value: 'h4'},
-        {title: 'Heading 5', value: 'h5'},
-        {title: 'Heading 6', value: 'h6'},
-        {title: 'Quote', value: 'blockquote'},
-      ],
+      styles: [{title: `Normal`, value: `normal`}],
 
       lists: [{title: `Bullet`, value: `bullet`}],
 
@@ -35,8 +26,8 @@ export default defineType({
         // Annotations can be any object structure – e.g. a link or a footnote.
         annotations: [
           {
-            title: `URL`,
             name: `link`,
+            title: `URL`,
             type: `object`,
             fields: [
               {
@@ -44,14 +35,21 @@ export default defineType({
                 title: `URL`,
                 type: `string`,
               },
+              {
+                name: `isExternal`,
+                title: `External?`,
+                type: `boolean`,
+                description: `Opens link in new tab`,
+                initialValue: false,
+              },
             ],
           },
         ],
       },
     }),
-    defineArrayMember({
-      title: `Alt Image`,
-      type: `altImage`,
-    }),
+    // defineArrayMember({
+    //   title: `Alt Image`,
+    //   type: `altImage`,
+    // }),
   ],
 })
