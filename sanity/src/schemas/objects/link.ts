@@ -71,7 +71,7 @@ export default defineType({
       name: 'reference',
       title: 'Reference',
       type: 'reference',
-      to: [{type: 'homePage'}, {type: 'project'}],
+      to: [{type: 'homePage'}, {type: 'page'}, {type: 'project'}],
       validation: (Rule) =>
         Rule.custom((reference, {parent}: any) => {
           if (parent?.type === 'internal' && !reference) {

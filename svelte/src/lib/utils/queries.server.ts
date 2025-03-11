@@ -44,7 +44,7 @@ export const pageQuery = `*[_type == "page" && slug.current == $slug][0] {
 	slug {
 		current
 	},
-	${sections},
+	${sections}
 	${pageSEO}
 }`;
 
@@ -60,8 +60,20 @@ export const projectQuery = `*[_type == "project" && slug.current == $slug][0] {
 	gallery[] {
 		${image}
 	},
-	${sections},
+	${sections}
 	${pageSEO}
+}`;
+
+export const projectListQuery = `*[_type == "project"] {
+	_id,
+	title,
+	slug {
+		current
+	},
+	date,
+	thumbnail {
+		${image}
+	},
 }`;
 
 export const fetchSite = async () => {
@@ -92,4 +104,10 @@ export const fetchProject = async (slug: string): Promise<ProjectData> => {
 	const project = await sanityClient.fetch(projectQuery, { slug });
 	if (!project) throw new Error('Error fetching project data');
 	return project;
+};
+
+export const fetchProjects = async (): Promise<ProjectData[]> => {
+	const projects = await sanityClient.fetch(projectListQuery);
+	if (!projects) throw new Error('Error fetching projects data');
+	return projects;
 };

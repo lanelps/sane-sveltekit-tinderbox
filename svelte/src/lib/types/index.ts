@@ -312,6 +312,16 @@ export type ProjectData = {
 	seo: SEOPage;
 };
 
+export type ProjectsPageData = {
+	projects: {
+		_id: string;
+		title: string;
+		slug: Slug;
+		date: string;
+		thumbnail: RawImage;
+	}[];
+};
+
 // Sections
 
 export interface ExampleSection {
