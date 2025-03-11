@@ -17,32 +17,37 @@
 	let { seo, title, settings }: Props = $props();
 
 	// Compute basic SEO values with fallbacks
-	const pageTitle = $derived(seo?.title || title);
+	const pageTitle = $derived(seo?.title || title || '');
 	const siteTitle = $derived(settings?.seo?.title);
-	const finalTitle = $derived(siteTitle ? `${pageTitle} | ${siteTitle}` : pageTitle || siteTitle);
-	const finalDescription = $derived(seo?.description || settings?.seo?.description);
-	const finalKeywords = $derived(seo?.keywords || settings?.seo?.keywords);
+	const finalTitle = $derived(
+		siteTitle ? `${pageTitle || ''} | ${siteTitle}` : pageTitle || siteTitle || ''
+	);
+	const finalDescription = $derived(seo?.description || settings?.seo?.description || '');
+	const finalKeywords = $derived(seo?.keywords || settings?.seo?.keywords || []);
 	const finalImage = $derived(seo?.image || settings?.seo?.image);
 
 	// Generate breadcrumbs from URL
-	const breadcrumbItems: () => JsonLdBreadcrumbItem[] | null = $derived(() => {
+	const breadcrumbItems = $derived(() => {
 		const paths = page.url.pathname.split('/').filter(Boolean);
 		if (!paths.length) return null;
 
-		return paths.map((path: string, index: number) => ({
-			'@type': 'ListItem',
-			position: index + 1,
-			item: {
-				'@type': 'WebPage',
-				'@id': `${page.url.origin}/${paths.slice(0, index + 1).join('/')}`,
-				name: path === 'projects' ? 'Projects' : pageTitle
-			}
-		}));
+		return paths.map(
+			(path: string, index: number) =>
+				({
+					'@type': 'ListItem',
+					position: index + 1,
+					item: {
+						'@type': 'WebPage',
+						'@id': `${page.url.origin}/${paths.slice(0, index + 1).join('/')}`,
+						name: path === 'projects' ? 'Projects' : pageTitle
+					}
+				}) satisfies JsonLdBreadcrumbItem
+		);
 	});
 
 	// Compute organization schema
-	const orgSchema: () => JsonLdOrganization | null = $derived(() => {
-		if (!settings?.organization) return null;
+	const orgSchema = $derived(() => {
+		if (!settings?.organization?.name || !page?.url?.origin) return null;
 
 		const org: JsonLdOrganization = {
 			'@type': 'Organization',
@@ -51,11 +56,11 @@
 			url: page.url.origin
 		};
 
-		if (settings.organization.logo) {
+		if (settings.organization.logo?.src) {
 			org.logo = {
 				'@type': 'ImageObject',
 				'@id': `${page.url.origin}/#logo`,
-				url: settings.organization.logo.src || '',
+				url: settings.organization.logo.src,
 				width: settings.organization.logo.width || 0,
 				height: settings.organization.logo.height || 0,
 				caption: settings.organization.name
@@ -81,14 +86,14 @@
 	});
 
 	// Compute page schema
-	const pageSchema: () => JsonLdWebPage | null = $derived(() => {
-		if (!settings?.organization) return null;
+	const pageSchema = $derived(() => {
+		if (!settings?.organization?.name || !page?.url?.href) return null;
 
 		const schema: JsonLdWebPage = {
 			'@type': seo?.schema?.type || 'WebPage',
 			'@id': `${page.url.href}#webpage`,
-			url: page.url.href || '',
-			name: finalTitle || '',
+			url: page.url.href,
+			name: finalTitle,
 			isPartOf: {
 				'@id': `${page.url.origin}/#website`
 			},
@@ -99,29 +104,31 @@
 			schema.description = finalDescription;
 		}
 
-		if (finalImage) {
+		if (finalImage?.url) {
 			schema.image = {
 				'@type': 'ImageObject',
 				'@id': `${page.url.href}#primaryimage`,
-				url: finalImage.url || '',
+				url: finalImage.url,
 				width: finalImage.dimensions?.width || 0,
 				height: finalImage.dimensions?.height || 0,
 				caption: finalImage.alt || ''
 			};
 		}
 
-		if (seo?.schema?.author) {
+		if (seo?.schema?.author?.name) {
 			schema.author = {
 				'@type': 'Person',
-				name: seo.schema.author.name || '',
+				name: seo.schema.author.name,
 				url: seo.schema.author.url || '',
-				image: seo.schema.author.image && {
-					'@type': 'ImageObject',
-					url: seo.schema.author.image.url || '',
-					width: seo.schema.author.image.dimensions?.width || 0,
-					height: seo.schema.author.image.dimensions?.height || 0,
-					caption: seo.schema.author.name || ''
-				}
+				...(seo.schema.author.image?.url && {
+					image: {
+						'@type': 'ImageObject',
+						url: seo.schema.author.image.url,
+						width: seo.schema.author.image.dimensions?.width || 0,
+						height: seo.schema.author.image.dimensions?.height || 0,
+						caption: seo.schema.author.name
+					}
+				})
 			};
 		}
 
@@ -138,7 +145,7 @@
 	});
 
 	// Compute final schema
-	const schema: () => Schema | null = $derived(() => {
+	const schema = $derived(() => {
 		const items = [];
 		const org = orgSchema();
 		const page = pageSchema();
@@ -148,12 +155,10 @@
 
 		if (!items.length) return null;
 
-		const result: Schema = {
+		return {
 			'@context': 'https://schema.org',
 			'@graph': items
-		};
-
-		return result;
+		} satisfies Schema;
 	});
 </script>
 
@@ -194,7 +199,7 @@
 	{/if}
 
 	<!-- JSON-LD Schema -->
-	{#if seo?.schema && schema()}
-		{@html serializeSchema(schema())}
+	{#if seo?.schema}
+		{@html schema() && serializeSchema(schema())}
 	{/if}
 </svelte:head>
