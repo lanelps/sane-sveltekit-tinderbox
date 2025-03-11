@@ -1,7 +1,7 @@
 import {defineField, defineType} from 'sanity'
 
 export default defineType({
-  name: 'seo.page',
+  name: 'seo.info',
   title: 'SEO',
   type: 'object',
   fields: [
@@ -9,7 +9,7 @@ export default defineType({
       name: 'title',
       title: 'Page Title',
       type: 'string',
-      description: 'Defaults to the projects title',
+      description: 'Defaults to the page title',
     }),
     defineField({
       name: 'description',
@@ -31,6 +31,11 @@ export default defineType({
       type: 'image',
       description:
         'Used for both search engine results and social cards. Image should have a 16:9 aspect ratio. eg. 1200 x 675 pixels',
+    }),
+    defineField({
+      name: 'schema',
+      title: 'Schema Data',
+      type: 'schema.info',
     }),
   ],
   options: {

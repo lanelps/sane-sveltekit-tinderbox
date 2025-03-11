@@ -1,11 +1,95 @@
-@import url('./typography.css');
+@import 'tailwindcss';
+@import './typography.css';
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@theme {
+	/* Colors */
+	--color-transparent: transparent;
+	--color-current: currentColor;
+	--color-black: #000;
+	--color-grey: #c4c4c4;
+	--color-off-white: #f9f9f9;
+	--color-white: #fff;
+	--color-purple-50: #34154b;
+	--color-purple-100: #9f5ed2;
+	--color-blue-50: #005b82;
+	--color-blue-100: #00a8e8;
+	--color-orange-50: #843f02;
+	--color-orange-100: #fc9b45;
+	--color-green-100: #00ff00;
 
-@layer utilities {
+	/* Breakpoints */
+	--breakpoint-xs-m: 20rem; /* 320px */
+	--breakpoint-sm-m: 22.5rem; /* 360px */
+	--breakpoint-md-m: 25.875rem; /* 414px */
+	--breakpoint-lg-m: 26.75rem; /* 428px */
+	--breakpoint-sm-t: 46.5rem; /* 744px */
+	--breakpoint-md-t: 52.125rem; /* 834px */
+	--breakpoint-lg-t: 64rem; /* 1024px */
+	--breakpoint-sm-d: 80rem; /* 1280px */
+	--breakpoint-md-d: 90rem; /* 1440px */
+	--breakpoint-lg-d: 94.5rem; /* 1512px */
+	--breakpoint-xl-d: 108rem; /* 1728px */
+	--breakpoint-xxl-d: 120rem; /* 1920px */
+
+	/* Fonts */
+	--font-main: 'IBM Plex Sans', 'Helvetica Neue', ui-sans-serif, system-ui, sans-serif;
+
+	/* Trasnsitions */
+	--default-transition-duration: 300ms;
+	--default-transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+
+	/* Animations */
+	--animate-fade: appear var(--default-transition-duration)
+		var(--default-transition-timing-function) forwards;
+	--animate-fade-up: appear-up var(--default-transition-duration)
+		var(--default-transition-timing-function) forwards;
+	--animate-fade-down: appear-down var(--default-transition-duration)
+		var(--default-transition-timing-function) forwards;
+
+	@keyframes appear {
+		0% {
+			opacity: 0;
+		}
+		100% {
+			opacity: 1;
+		}
+	}
+
+	@keyframes appear-up {
+		0% {
+			opacity: 0;
+			transform: translateY(100%);
+		}
+		100% {
+			opacity: 1;
+			transform: translateY(0%);
+		}
+	}
+
+	@keyframes appear-down {
+		0% {
+			opacity: 0;
+			transform: translateY(-100%);
+		}
+		100% {
+			opacity: 1;
+			transform: translateY(0%);
+		}
+	}
+}
+
+@utility animate-delay-* {
+	animation-delay: calc(--value(integer) * 1ms);
+}
+
+@layer componets {
 	.grid-main {
-		@apply w-full grid grid-cols-4 sm-t:grid-cols-12 gap-6 px-6;
+		@apply grid w-full grid-cols-4 gap-6 px-6;
+	}
+
+	@variant sm-t {
+		.grid-main {
+			@apply grid-cols-12;
+		}
 	}
 }

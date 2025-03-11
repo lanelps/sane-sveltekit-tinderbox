@@ -1,21 +1,29 @@
-<script>
-	import navActive from '$lib/stores/navActive';
+<script lang="ts">
 	import { onMount } from 'svelte';
+	import { twMerge } from 'tailwind-merge';
+
+	import { nav } from '$lib/stores/nav.svelte';
 	import Link from '$lib/components/Link.svelte';
 
-	export let links;
+	import type { Links } from '$lib/types';
+
+	interface Props {
+		links: Links[];
+	}
+
+	let { links }: Props = $props();
 
 	onMount(() => {
-		navActive.close();
+		nav.close();
 	});
 </script>
 
-<header class="fixed top-0 left-0 right-0 grid-main p-6 z-50">
+<header class="font-main grid-main fixed top-0 right-0 left-0 z-50 p-6">
 	<h1 class="col-span-3">Sane SvelteKit Tinderbox 🔥</h1>
 
-	<nav class="hidden sm-t:block">
-		<ul class="w-full flex justify-between gap-x-8">
-			{#each links as link (link._key)}
+	<nav class="sm-t:block hidden">
+		<ul class="flex w-full justify-between gap-x-8">
+			{#each links as { link, _key } (_key)}
 				<li>
 					<Link {link} />
 				</li>
@@ -24,12 +32,14 @@
 	</nav>
 
 	<nav
-		class="mobile-nav fixed sm-t:hidden inset-0 w-full h-full p-6 bg-white opacity-0 pointer-events-none transition-opacity z-40"
-		class:active={$navActive}
-		aria-hidden={!$navActive}
+		class={twMerge(
+			'mobile-nav sm-t:hidden pointer-events-none fixed inset-0 z-40 h-full w-full bg-white p-6 opacity-0 transition-opacity',
+			nav.isActive && 'pointer-events-auto opacity-100'
+		)}
+		aria-hidden={!nav.isActive}
 	>
-		<ul class="w-full flex flex-col justify-between gap-x-8">
-			{#each links as link (link._key)}
+		<ul class="flex w-full flex-col justify-between gap-x-8">
+			{#each links as { link, _key } (_key)}
 				<li>
 					<Link {link} />
 				</li>
@@ -37,14 +47,7 @@
 		</ul>
 	</nav>
 
-	<button class="sm-t:hidden absolute top-6 right-6 z-50" on:click={navActive.toggle}
-		>{$navActive ? `Close` : `Open`} menu</button
+	<button class="sm-t:hidden absolute top-6 right-6 z-50 cursor-pointer" onclick={nav.toggle}
+		>{nav.isActive ? `Close` : `Open`} menu</button
 	>
 </header>
-
-<style lang="postcss">
-	.mobile-nav.active {
-		opacity: 1;
-		pointer-events: all;
-	}
-</style>

@@ -57,7 +57,7 @@ export default defineType({
     defineField({
       name: 'seo',
       title: 'SEO',
-      type: 'seo.page',
+      type: 'seo.project',
       group: 'seo',
     }),
   ],

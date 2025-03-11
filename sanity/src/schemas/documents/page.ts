@@ -3,34 +3,28 @@ import {defineField, defineType} from 'sanity'
 import sections from '../../utils/sections'
 
 export default defineType({
-  name: 'homePage',
-  title: 'Home',
+  name: 'page',
+  title: 'Page',
   type: 'document',
-  icon: () => `🏠`,
-  groups: [
-    {
-      name: 'content',
-      title: 'Content',
-    },
-    {
-      name: 'seo',
-      title: 'SEO',
-    },
-  ],
   fields: [
     defineField({
       name: 'title',
       title: 'Title',
       type: 'string',
-      validation: (Rule) => Rule.required(),
-      group: 'content',
+    }),
+    defineField({
+      name: 'slug',
+      title: 'Slug',
+      type: 'slug',
+      options: {
+        source: 'title',
+      },
     }),
     sections,
     defineField({
       name: 'seo',
       title: 'SEO',
-      type: 'seo.home',
-      group: 'seo',
+      type: 'seo.page',
     }),
   ],
 })

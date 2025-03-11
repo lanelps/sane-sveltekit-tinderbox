@@ -1,4 +1,5 @@
 import {defineField, defineType} from 'sanity'
+import {PlayIcon} from '@sanity/icons'
 
 export default defineType({
   name: 'media',
@@ -14,7 +15,6 @@ export default defineType({
           {title: 'Image', value: 'image'},
           {title: 'Video', value: 'video'},
         ],
-        layout: 'radio',
       },
       initialValue: 'image',
       validation: (Rule) => Rule.required(),
@@ -39,42 +39,26 @@ export default defineType({
       validation: (Rule: any) =>
         Rule.custom((field: any, context: any) => {
           if (context.parent.type === 'video' && !field) {
-            return 'An video is required'
+            return 'A video is required'
           }
           return true
         }),
       hidden: ({parent}: any) => parent?.type !== 'video',
     }),
-    defineField({
-      name: 'layout',
-      title: 'Layout',
-      type: 'string',
-      options: {
-        list: [
-          {title: 'Full Width', value: 'full'},
-          {title: 'Center', value: 'center'},
-          {title: 'Left', value: 'left'},
-          {title: 'Right', value: 'right'},
-        ],
-        layout: 'radio',
-        direction: 'horizontal',
-      },
-      initialValue: 'full',
-      validation: (Rule) => Rule.required(),
-    }),
   ],
 
   preview: {
     select: {
-      title: 'image.alt',
-      type: 'type',
+      title: 'type',
       image: 'image',
       video: 'video',
     },
-    prepare({type, title, image, video}: any) {
+
+    prepare({title, image, video}: any) {
       return {
-        title: type === 'image' && title ? title : 'Media',
-        media: type === 'image' ? image : video,
+        title: title === 'image' ? 'Image' : 'Video',
+        subtitle: title === 'video' && video,
+        media: title === 'image' ? image : PlayIcon,
       }
     },
   },

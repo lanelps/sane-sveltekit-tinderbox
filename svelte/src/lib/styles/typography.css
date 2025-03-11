@@ -1,29 +1,31 @@
 /* IBM Plex Sans */
 @font-face {
 	font-family: 'IBM Plex Sans';
-	src: url('../assets/fonts/IBMPlexSans-Regular.woff2') format('woff2'),
+	src:
+		url('../assets/fonts/IBMPlexSans-Regular.woff2') format('woff2'),
 		url('../assets/fonts/IBMPlexSans-Regular.woff') format('woff');
-	font-display: block;
+	font-display: swap;
 	font-weight: normal;
 	font-style: normal;
 }
 
 @font-face {
 	font-family: 'IBM Plex Sans';
-	src: url('../assets/fonts/IBMPlexSans-Italic.woff2') format('woff2'),
+	src:
+		url('../assets/fonts/IBMPlexSans-Italic.woff2') format('woff2'),
 		url('../assets/fonts/IBMPlexSans-Italic.woff') format('woff');
-	font-display: block;
+	font-display: swap;
 	font-weight: normal;
 	font-style: italic;
 }
 
-/* Text Classes */
-@layer utilities {
+/* Text Components */
+@layer components {
 	.text-title {
-		@apply font-main font-bold text-4xl leading-none tracking-[-0.25px] uppercase text-green-100;
+		@apply font-main text-4xl leading-none font-bold tracking-[-0.25px] text-green-100 uppercase;
 	}
 
-	@media screen(sm-t) {
+	@variant sm-t {
 		.text-title {
 			@apply text-5xl;
 		}

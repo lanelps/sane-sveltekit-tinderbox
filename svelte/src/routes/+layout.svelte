@@ -1,31 +1,29 @@
-<script>
+<script lang="ts">
+	import { page } from '$app/state';
 	import { afterNavigate } from '$app/navigation';
-	import { page } from '$app/stores';
-	import '$lib/styles/index.css';
 
-	import navActive from '$lib/stores/navActive';
+	import { nav } from '$lib/stores/nav.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Seo from '$lib/components/Seo.svelte';
+	import '$lib/styles/index.css';
 
-	export let data;
+	import type { LayoutProps } from './$types';
 
-	$: ({ title, seo, settings } = $page.data);
+	let { data, children }: LayoutProps = $props();
 
 	afterNavigate(() => {
-		navActive.close();
+		nav.close();
 	});
 </script>
 
-<svelte:window on:keydown={navActive.close} />
+<svelte:window on:keydown={nav.close} />
 
-<Seo {seo} {title} {settings} />
+<Seo seo={page.data.seo} title={page.data.title} settings={data.site} />
 
-<div class="relative text-main pt-20">
-	<Header links={data?.settings?.menu?.links} />
+<Header links={data.site.navigation} />
 
-	{#key data?.url}
-		<main class="relative h-full grid-main">
-			<slot />
-		</main>
-	{/key}
-</div>
+{#key page.data?.url}
+	<main class="grid-main relative h-full pt-20">
+		{@render children()}
+	</main>
+{/key}

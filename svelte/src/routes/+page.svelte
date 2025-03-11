@@ -1,8 +1,9 @@
-<script>
-	import PageBuilder from '$lib/components/PageBuilder.svelte';
-	export let data;
+<script lang="ts">
+	// import PageBuilder from '$lib/components/PageBuilder.svelte';
+
+	// import type { PageData } from './$types';
+
+	// let { data }: PageData = $props();
 </script>
 
-<h1 class="col-span-full text-title">Welcome to Sane SvelteKit Tinderbox 🔥</h1>
-
-<PageBuilder sections={data?.sections} />
+<h1 class="text-title col-span-full">Welcome to Sane SvelteKit Tinderbox 🔥</h1>

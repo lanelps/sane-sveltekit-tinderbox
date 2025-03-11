@@ -1,15 +1,16 @@
 <script>
-	export let image;
-	export let loading = 'lazy';
-	let loaded = false;
+	let { image, loading = 'lazy' } = $props();
+	let loaded = $state(false);
 </script>
 
 <img
-	class="relative w-full h-auto opacity-0 transition-opacity duration-1000"
-	class:opacity-100={loaded}
+	class={[
+		'relative h-auto w-full opacity-0 transition-opacity duration-1000',
+		loaded ? 'opacity-100' : ''
+	]}
 	{loading}
 	fetchPriority={loading === 'eager' ? 'high' : undefined}
 	alt={image?.altText || ''}
 	{...image?.url}
-	on:load={() => (loaded = true)}
+	onload={() => (loaded = true)}
 />

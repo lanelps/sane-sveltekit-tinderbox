@@ -1,54 +1,24 @@
-import {defineArrayMember, defineField, defineType} from 'sanity'
+import {defineField, defineType} from 'sanity'
 
 export default defineType({
   name: 'settings',
   title: 'Settings',
   type: 'document',
-  icon: () => `⚙️`,
-  groups: [
-    {
-      name: 'seo',
-      title: 'SEO',
-    },
-    {
-      name: 'scripts',
-      title: 'External Scripts',
-    },
-  ],
+  icon: () => '⚙️',
   fields: [
-    // SEO
-    defineField({
-      name: 'seo',
-      title: 'SEO',
-      type: 'seo.settings',
-      group: 'seo',
-      options: {
-        collapsed: false,
-        collapsible: true,
-      },
-    }),
-    // Scripts
     defineField({
       name: 'scripts',
-      title: 'External Scripts',
+      title: 'Scripts',
+      description: 'Add custom scripts (analytics, tracking, etc.)',
       type: 'array',
-      of: [
-        defineArrayMember({
-          type: 'scriptSrc',
-        }),
-        defineArrayMember({
-          type: 'scriptInline',
-        }),
-      ],
-      group: 'scripts',
-      description:
-        'Add external scripts to the <head> of the document. For example, Google Analytics. These fields are not sanitized, so be careful what you put in here.',
+      of: [{type: 'scriptInline'}, {type: 'scriptSrc'}],
+    }),
+    defineField({
+      name: 'redirects',
+      title: 'Redirects',
+      description: 'Configure URL redirects',
+      type: 'array',
+      of: [{type: 'string'}],
     }),
   ],
-  preview: {
-    select: {},
-    prepare: () => ({
-      title: 'Settings',
-    }),
-  },
 })
