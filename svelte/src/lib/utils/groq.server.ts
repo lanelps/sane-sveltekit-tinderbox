@@ -49,18 +49,18 @@ export const author = `
         "url": author.url,
         "image": author.image {
             ${image}
-        }
-    }
+        },
+    },
 `;
 
 // Schema Template
 export const schema = `
     "schema": {
         "type": seo.schema.type,
-        ${author},
+        ${author}
         "publishedAt": seo.schema.publishedAt,
         "modifiedAt": seo.schema.modifiedAt
-    }
+    },
 `;
 
 // SEO Templates
@@ -70,12 +70,12 @@ export const baseSEO = `
     "keywords": seo.keywords,
     "image": seo.image {
         ${image}
-    }
+    },
 `;
 
 export const siteSEO = `
     "seo": {
-        ${baseSEO},
+        ${baseSEO}
         "favicon": seo.favicon {
             ${image}
         }
@@ -84,11 +84,11 @@ export const siteSEO = `
 
 export const pageSEO = `
     "seo": {
-        ${baseSEO},
+        ${baseSEO}
         "createdAt": _createdAt,
         "updatedAt": _updatedAt,
         ${schema}
-    }
+    },
 `;
 
 // Content Templates
