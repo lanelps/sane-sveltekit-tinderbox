@@ -1,5 +1,13 @@
 <script lang="ts">
+	import { page } from '$app/state';
+	import { serializeSchema } from '$lib/utils/json-ld';
 	import type { SEOPage, ParsedSiteData } from '$lib/types';
+	import type {
+		Schema,
+		JsonLdOrganization,
+		JsonLdWebPage,
+		JsonLdBreadcrumbItem
+	} from '$lib/utils/json-ld';
 
 	interface Props {
 		seo: SEOPage;
@@ -8,163 +16,185 @@
 	}
 	let { seo, title, settings }: Props = $props();
 
-	// Compute final SEO values with fallbacks
+	// Compute basic SEO values with fallbacks
 	const pageTitle = $derived(seo?.title || title);
 	const siteTitle = $derived(settings?.seo?.title);
-	const finalSeo = $derived({
-		title: siteTitle ? `${pageTitle} | ${siteTitle}` : pageTitle || siteTitle,
-		description: seo?.description || settings?.seo?.description,
-		keywords: seo?.keywords || settings?.seo?.keywords,
-		image: seo?.image || settings?.seo?.image,
-		favicon: settings?.seo?.favicon
+	const finalTitle = $derived(siteTitle ? `${pageTitle} | ${siteTitle}` : pageTitle || siteTitle);
+	const finalDescription = $derived(seo?.description || settings?.seo?.description);
+	const finalKeywords = $derived(seo?.keywords || settings?.seo?.keywords);
+	const finalImage = $derived(seo?.image || settings?.seo?.image);
+
+	// Generate breadcrumbs from URL
+	const breadcrumbItems: () => JsonLdBreadcrumbItem[] | null = $derived(() => {
+		const paths = page.url.pathname.split('/').filter(Boolean);
+		if (!paths.length) return null;
+
+		return paths.map((path: string, index: number) => ({
+			'@type': 'ListItem',
+			position: index + 1,
+			item: {
+				'@type': 'WebPage',
+				'@id': `${page.url.origin}/${paths.slice(0, index + 1).join('/')}`,
+				name: path === 'projects' ? 'Projects' : pageTitle
+			}
+		}));
+	});
+
+	// Compute organization schema
+	const orgSchema: () => JsonLdOrganization | null = $derived(() => {
+		if (!settings?.organization) return null;
+
+		const org: JsonLdOrganization = {
+			'@type': 'Organization',
+			'@id': `${page.url.origin}/#organization`,
+			name: settings.organization.name,
+			url: page.url.origin
+		};
+
+		if (settings.organization.logo) {
+			org.logo = {
+				'@type': 'ImageObject',
+				'@id': `${page.url.origin}/#logo`,
+				url: settings.organization.logo.src || '',
+				width: settings.organization.logo.width || 0,
+				height: settings.organization.logo.height || 0,
+				caption: settings.organization.name
+			};
+		}
+
+		if (settings.organization.description) {
+			org.description = settings.organization.description;
+		}
+
+		if (settings.organization.address) {
+			org.address = {
+				'@type': 'PostalAddress',
+				streetAddress: settings.organization.address.street,
+				addressLocality: settings.organization.address.city,
+				addressRegion: settings.organization.address.state,
+				postalCode: settings.organization.address.zipCode,
+				addressCountry: settings.organization.address.country
+			};
+		}
+
+		return org;
+	});
+
+	// Compute page schema
+	const pageSchema: () => JsonLdWebPage | null = $derived(() => {
+		if (!settings?.organization) return null;
+
+		const schema: JsonLdWebPage = {
+			'@type': seo?.schema?.type || 'WebPage',
+			'@id': `${page.url.href}#webpage`,
+			url: page.url.href || '',
+			name: finalTitle || '',
+			isPartOf: {
+				'@id': `${page.url.origin}/#website`
+			},
+			inLanguage: 'en-US'
+		};
+
+		if (finalDescription) {
+			schema.description = finalDescription;
+		}
+
+		if (finalImage) {
+			schema.image = {
+				'@type': 'ImageObject',
+				'@id': `${page.url.href}#primaryimage`,
+				url: finalImage.url || '',
+				width: finalImage.dimensions?.width || 0,
+				height: finalImage.dimensions?.height || 0,
+				caption: finalImage.alt || ''
+			};
+		}
+
+		if (seo?.schema?.author) {
+			schema.author = {
+				'@type': 'Person',
+				name: seo.schema.author.name || '',
+				url: seo.schema.author.url || '',
+				image: seo.schema.author.image && {
+					'@type': 'ImageObject',
+					url: seo.schema.author.image.url || '',
+					width: seo.schema.author.image.dimensions?.width || 0,
+					height: seo.schema.author.image.dimensions?.height || 0,
+					caption: seo.schema.author.name || ''
+				}
+			};
+		}
+
+		const items = breadcrumbItems();
+		if (items) {
+			schema.breadcrumb = {
+				'@type': 'BreadcrumbList',
+				'@id': `${page.url.href}#breadcrumb`,
+				itemListElement: items
+			};
+		}
+
+		return schema;
+	});
+
+	// Compute final schema
+	const schema: () => Schema | null = $derived(() => {
+		const items = [];
+		const org = orgSchema();
+		const page = pageSchema();
+
+		if (org) items.push(org);
+		if (page) items.push(page);
+
+		if (!items.length) return null;
+
+		const result: Schema = {
+			'@context': 'https://schema.org',
+			'@graph': items
+		};
+
+		return result;
 	});
 </script>
 
 <svelte:head>
-	<!-- Basic -->
-	<title>{finalSeo.title}</title>
+	<!-- Basic Meta Tags -->
+	<title>{finalTitle}</title>
 	<meta name="robots" content="index,follow" />
-	{#if finalSeo.description}
-		<meta name="description" content={finalSeo.description} />
+	{#if finalDescription}
+		<meta name="description" content={finalDescription} />
 	{/if}
-	{#if finalSeo.keywords}
-		<meta name="keywords" content={finalSeo.keywords.join(', ')} />
+	{#if finalKeywords}
+		<meta name="keywords" content={finalKeywords.join(', ')} />
 	{/if}
 
 	<!-- Open Graph -->
 	<meta property="og:type" content="website" />
-	<meta property="og:title" content={finalSeo.title} />
-	{#if finalSeo.description}
-		<meta property="og:description" content={finalSeo.description} />
+	<meta property="og:title" content={finalTitle} />
+	{#if finalDescription}
+		<meta property="og:description" content={finalDescription} />
 	{/if}
-	{#if finalSeo.image?.url}
-		<meta property="og:image" content={finalSeo.image.url} />
+	{#if finalImage?.url}
+		<meta property="og:image" content={finalImage.url} />
 	{/if}
 
 	<!-- Twitter Card -->
 	<meta name="twitter:card" content="summary_large_image" />
-	<meta name="twitter:title" content={finalSeo.title} />
-	{#if finalSeo.description}
-		<meta name="twitter:description" content={finalSeo.description} />
+	<meta name="twitter:title" content={finalTitle} />
+	{#if finalDescription}
+		<meta name="twitter:description" content={finalDescription} />
 	{/if}
-	{#if finalSeo.image?.url}
-		<meta name="twitter:image" content={finalSeo.image.url} />
+	{#if finalImage?.url}
+		<meta name="twitter:image" content={finalImage.url} />
 	{/if}
 
 	<!-- Favicon -->
-	{#if finalSeo.favicon?.url}
-		<link rel="icon" href={finalSeo.favicon.url} />
+	{#if settings?.seo?.favicon?.url}
+		<link rel="icon" href={settings.seo.favicon.url} />
 	{/if}
 
 	<!-- JSON-LD Schema -->
-	{#if seo?.schema}
-		<script type="application/ld+json">
-			{JSON.stringify({
-				'@context': 'https://schema.org',
-				'@graph': [
-					// Organization
-					{
-						'@type': 'Organization',
-						'@id': `${$page.url.origin}/#organization`,
-						name: settings?.seo?.organization?.name,
-						url: $page.url.origin,
-						logo: settings?.seo?.organization?.logo?.url
-							? {
-									'@type': 'ImageObject',
-									'@id': `${$page.url.origin}/#logo`,
-									url: settings.seo.organization.logo.url,
-									contentUrl: settings.seo.organization.logo.url,
-									width: settings.seo.organization.logo.dimensions?.width,
-									height: settings.seo.organization.logo.dimensions?.height
-							  }
-							: undefined,
-						sameAs: settings?.seo?.organization?.sameAs,
-						address: settings?.seo?.organization?.address
-							? {
-									'@type': 'PostalAddress',
-									streetAddress: settings.seo.organization.address.street,
-									addressLocality: settings.seo.organization.address.city,
-									addressRegion: settings.seo.organization.address.state,
-									postalCode: settings.seo.organization.address.zipCode,
-									addressCountry: settings.seo.organization.address.country
-							  }
-							: undefined
-					},
-
-					// Page
-					{
-						'@type': seo.schema[seo.schema.pageType]?.type,
-						'@id': `${$page.url.href}#webpage`,
-						url: $page.url.href,
-						name: finalSeo.title,
-						description: finalSeo.description,
-						datePublished: seo.schema[seo.schema.pageType]?.publishedAt,
-						dateModified: seo.schema[seo.schema.pageType]?.modifiedAt,
-						isPartOf: {
-							'@id': `${$page.url.origin}/#website`
-						},
-						inLanguage: 'en-US',
-						...(finalSeo.image?.url
-							? {
-									image: {
-										'@type': 'ImageObject',
-										'@id': `${$page.url.href}#primaryimage`,
-										url: finalSeo.image.url,
-										width: finalSeo.image.dimensions?.width,
-										height: finalSeo.image.dimensions?.height
-									}
-							  }
-							: {}),
-						...(seo.schema[seo.schema.pageType]?.breadcrumb
-							? {
-									breadcrumb: {
-										'@type': 'BreadcrumbList',
-										'@id': `${$page.url.href}#breadcrumb`,
-										itemListElement: seo.schema[seo.schema.pageType].breadcrumb.map(
-											(item, index) => ({
-												'@type': 'ListItem',
-												position: index + 1,
-												item: {
-													'@type': 'WebPage',
-													'@id': item.url,
-													url: item.url,
-													name: item.name
-												}
-											})
-										)
-									}
-							  }
-							: {}),
-						...(seo.schema[seo.schema.pageType]?.author
-							? {
-									author: {
-										'@type': 'Person',
-										'@id': `${$page.url.origin}#${seo.schema[seo.schema.pageType].author.name
-											.toLowerCase()
-											.replace(/\s+/g, '-')}`,
-										name: seo.schema[seo.schema.pageType].author.name,
-										url: seo.schema[seo.schema.pageType].author.url,
-										...(seo.schema[seo.schema.pageType].author.image?.url
-											? {
-													image: {
-														'@type': 'ImageObject',
-														'@id': `${$page.url.origin}#${seo.schema[
-															seo.schema.pageType
-														].author.name
-															.toLowerCase()
-															.replace(/\s+/g, '-')}-image`,
-														url: seo.schema[seo.schema.pageType].author.image.url,
-														width: seo.schema[seo.schema.pageType].author.image.dimensions?.width,
-														height: seo.schema[seo.schema.pageType].author.image.dimensions?.height
-													}
-											  }
-											: {})
-									}
-							  }
-							: {})
-					}
-				]
-			})}
-		</script>
+	{#if seo?.schema && schema()}
+		{@html serializeSchema(schema())}
 	{/if}
 </svelte:head>

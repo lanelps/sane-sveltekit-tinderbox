@@ -42,86 +42,56 @@ export const media = `
     },
 `;
 
-// Schema Templates
-export const baseSchema = `
-    type,
-    publishedAt,
-    modifiedAt
-`;
-
-export const breadcrumb = `
-    breadcrumb[] {
-        name,
-        url
-    }
-`;
-
+// Author Template
 export const author = `
-    author {
-        name,
-        url,
-        image {
+    "author": {
+        "name": author.name,
+        "url": author.url,
+        "image": author.image {
             ${image}
         }
     }
 `;
 
-export const homeSchema = `
-    home {
-        ${baseSchema}
-    }
-`;
-
-export const infoSchema = `
-    info {
-        ${baseSchema},
-        ${breadcrumb}
-    }
-`;
-
-export const projectSchema = `
-    project {
-        ${baseSchema},
-        ${breadcrumb},
-        ${author}
-    }
-`;
-
+// Schema Template
 export const schema = `
-    schema {
-        pageType,
-        ${homeSchema},
-        ${infoSchema},
-        ${projectSchema}
+    "schema": {
+        "type": seo.schema.type,
+        ${author},
+        "publishedAt": seo.schema.publishedAt,
+        "modifiedAt": seo.schema.modifiedAt
     }
 `;
 
 // SEO Templates
 export const baseSEO = `
-    title,
-    description,
-    keywords,
-    image {
+    "title": seo.title,
+    "description": seo.description,
+    "keywords": seo.keywords,
+    "image": seo.image {
         ${image}
     }
 `;
 
 export const siteSEO = `
-    seo {
+    "seo": {
         ${baseSEO},
-        favicon {
+        "favicon": seo.favicon {
             ${image}
         }
     }
 `;
 
 export const pageSEO = `
-    seo {
+    "seo": {
         ${baseSEO},
+        "createdAt": _createdAt,
+        "updatedAt": _updatedAt,
         ${schema}
     }
 `;
 
+// Content Templates
 export const sections = `
     sections[] {
         _key,

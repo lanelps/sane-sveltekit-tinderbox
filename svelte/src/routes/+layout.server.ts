@@ -1,6 +1,8 @@
+import { error } from '@sveltejs/kit';
+
 import { parseSite } from '$lib/utils/data.server';
 import { fetchSettings, fetchSite } from '$lib/utils/queries.server';
-import { error } from '@sveltejs/kit';
+
 import type { LayoutData } from '$lib/types';
 import type { LayoutServerLoad } from './$types';
 

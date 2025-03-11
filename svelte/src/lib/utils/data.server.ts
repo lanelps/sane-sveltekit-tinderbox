@@ -33,12 +33,7 @@ const parseSchema = (schema: Schema | undefined): ParsedSchema | undefined => {
 
 	return {
 		...schema,
-		project: schema.project
-			? {
-					...schema.project,
-					author: parseAuthor(schema.project.author)
-				}
-			: undefined
+		author: parseAuthor(schema.author)
 	};
 };
 

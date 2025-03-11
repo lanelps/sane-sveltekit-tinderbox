@@ -1,10 +1,9 @@
 // singletons
 import homePage from './singletons/homePage'
-import info from './documents/info'
 import settings from './singletons/settings'
 import site from './singletons/site'
 
-const singletons = [homePage, info, settings, site] as any[]
+const singletons = [homePage, settings, site] as any[]
 
 // documents
 import page from './documents/page'
@@ -29,16 +28,8 @@ import video from './objects/video'
 
 // SEO types
 import seoPage from './objects/seo/page'
-import seoHome from './objects/seo/home'
-import seoInfo from './objects/seo/info'
-import seoProject from './objects/seo/project'
 import seoSite from './objects/seo/site'
-
-// Schema types
-import schemaBase from './objects/schema/base'
-import schemaHome from './objects/schema/home'
-import schemaInfo from './objects/schema/info'
-import schemaProject from './objects/schema/project'
+import schema from './objects/schema'
 
 const objects = [
   altImage,
@@ -50,15 +41,8 @@ const objects = [
   video,
   // SEO types
   seoPage,
-  seoHome,
-  seoInfo,
-  seoProject,
   seoSite,
-  // Schema types
-  schemaBase,
-  schemaHome,
-  schemaInfo,
-  schemaProject,
+  schema,
 ] as any[]
 
 export const schemaTypes = [...singletons, ...documents, ...sections, ...objects]

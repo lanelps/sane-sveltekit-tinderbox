@@ -33,13 +33,6 @@ const documents: Document[] = [
         singleton: true,
       },
       {
-        title: 'Info',
-        type: 'info',
-        icon: () => 'ℹ️',
-        singleton: true,
-        divider: true,
-      },
-      {
         title: 'Page',
         type: 'page',
         icon: () => '📄',

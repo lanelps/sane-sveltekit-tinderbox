@@ -6,6 +6,16 @@ export default defineType({
   name: 'page',
   title: 'Page',
   type: 'document',
+  groups: [
+    {
+      title: 'Content',
+      name: 'content',
+    },
+    {
+      title: 'SEO',
+      name: 'seo',
+    },
+  ],
   fields: [
     defineField({
       name: 'title',

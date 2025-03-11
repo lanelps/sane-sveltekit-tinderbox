@@ -1,5 +1,17 @@
 import type { ImageUrlBuilder } from '@sanity/image-url/lib/types/builder';
 import type { PortableTextBlock } from '@portabletext/types';
+import type {
+	WebPage,
+	Article,
+	BlogPosting,
+	NewsArticle,
+	AboutPage,
+	ContactPage,
+	FAQPage,
+	Product,
+	Service,
+	Event
+} from 'schema-dts';
 
 export interface RawImage {
 	alt?: string;
@@ -93,42 +105,36 @@ export interface Author {
 	image?: RawImage;
 }
 
-export interface ParsedAuthor extends Omit<Author, 'image'> {
+export interface ParsedAuthor {
+	name: string;
+	url?: string;
 	image?: Image;
 }
 
-export interface BaseSchema {
-	type: string;
+export type SchemaType =
+	| WebPage['@type']
+	| Article['@type']
+	| BlogPosting['@type']
+	| NewsArticle['@type']
+	| AboutPage['@type']
+	| ContactPage['@type']
+	| FAQPage['@type']
+	| Product['@type']
+	| Service['@type']
+	| Event['@type'];
+
+export interface Schema {
+	type: SchemaType;
+	author?: Author;
 	publishedAt?: string;
 	modifiedAt?: string;
 }
 
-export interface HomeSchema extends BaseSchema {
-	type: 'WebPage';
-}
-
-export interface InfoSchema extends BaseSchema {
-	type: 'AboutPage';
-	breadcrumb?: BreadcrumbItem[];
-}
-
-export interface ProjectSchema extends BaseSchema {
-	type: 'Product' | 'Service' | 'Event';
-	breadcrumb?: BreadcrumbItem[];
-	author?: Author;
-}
-
-export interface Schema {
-	pageType: 'home' | 'info' | 'project';
-	home?: HomeSchema;
-	info?: InfoSchema;
-	project?: ProjectSchema;
-}
-
-export interface ParsedSchema extends Omit<Schema, 'project'> {
-	project?: Omit<ProjectSchema, 'author'> & {
-		author?: ParsedAuthor;
-	};
+export interface ParsedSchema {
+	type: SchemaType;
+	author?: ParsedAuthor;
+	publishedAt?: string;
+	modifiedAt?: string;
 }
 
 export interface SEOPage {
@@ -136,10 +142,15 @@ export interface SEOPage {
 	description?: string;
 	keywords?: string[];
 	image?: RawImage;
+	createdAt?: string;
+	updatedAt?: string;
 	schema?: Schema;
 }
 
-export interface ParsedSEOPage extends Omit<SEOPage, 'image' | 'schema'> {
+export interface ParsedSEOPage {
+	title?: string;
+	description?: string;
+	keywords?: string[];
 	image?: Image;
 	schema?: ParsedSchema;
 }
@@ -150,7 +161,6 @@ export interface SEOSite {
 	keywords?: string[];
 	favicon?: RawImage;
 	image?: RawImage;
-	organization?: Organization;
 }
 
 export type Slug = {
@@ -253,11 +263,17 @@ export type SiteData = {
 	seo: SEOSite;
 };
 
-export type ParsedSiteData = Omit<SiteData, 'organization'> & {
+export type ParsedSiteData = {
+	navigation: Links[];
 	organization: {
 		name: string;
 		logo?: Image;
+		sameAs?: string[];
+		address?: Address;
+		description?: string;
 	};
+	socialLinks: Links[];
+	seo: SEOSite;
 };
 
 export type SettingsData = {
