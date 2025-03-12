@@ -2,7 +2,11 @@
 	import type { ProjectsPageData } from '$lib/types';
 	import Link from '$lib/components/Link.svelte';
 
-	let { data }: { data: ProjectsPageData } = $props();
+	interface Props {
+		data: ProjectsPageData;
+	}
+
+	let { data }: Props = $props();
 </script>
 
 <h1>Projects</h1>

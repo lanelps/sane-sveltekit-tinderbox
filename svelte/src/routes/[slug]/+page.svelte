@@ -3,7 +3,11 @@
 
 	import type { PageData } from './$types';
 
-	let { data }: PageData = $props();
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 </script>
 
 <h1 class="text-title col-span-full">{data?.slug?.current}</h1>

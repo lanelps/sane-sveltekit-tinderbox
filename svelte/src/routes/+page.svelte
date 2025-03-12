@@ -1,9 +1,11 @@
 <script lang="ts">
-	// import PageBuilder from '$lib/components/PageBuilder.svelte';
+	import type { PageData } from './$types';
 
-	// import type { PageData } from './$types';
+	interface Props {
+		data: PageData;
+	}
 
-	// let { data }: PageData = $props();
+	let { data }: Props = $props();
 </script>
 
 <h1 class="text-title col-span-full">Welcome to Sane SvelteKit Tinderbox 🔥</h1>
