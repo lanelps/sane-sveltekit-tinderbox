@@ -1,6 +1,10 @@
 <script lang="ts">
 	import { twMerge } from 'tailwind-merge';
 	import type { Snippet } from 'svelte';
+
+	import ExternalIcon from '$lib/assets/svg/External.svelte';
+	import DownloadIcon from '$lib/assets/svg/Download.svelte';
+
 	import type { Link, InternalLink, ExternalLink, FileLink } from '$lib/types';
 
 	interface Props {
@@ -8,9 +12,10 @@
 		link: Link;
 		label?: string;
 		children?: Snippet;
+		ariaLabel?: string;
 	}
 
-	let { link, label, class: className, children }: Props = $props();
+	let { link, label, class: className, children, ariaLabel }: Props = $props();
 
 	// Type guards
 	const isString = (value: unknown): value is string => typeof value === 'string';
@@ -43,28 +48,51 @@
 	};
 
 	const getLinkProps = () => {
+		const props: Record<string, string | boolean> = {
+			role: 'link',
+			tabindex: '0'
+		};
+
 		if (isExternal(link)) {
-			return {
-				target: link.newTab ? '_blank' : '_self',
-				rel: 'noopener noreferrer'
-			};
+			props.target = link.newTab ? '_blank' : '_self';
+			props.rel = 'noopener noreferrer';
+			props['aria-label'] = ariaLabel || `${getLabel()} (opens in new tab)`;
+		} else if (isFile(link)) {
+			props.download = true;
+			props.target = '_blank';
+			props['aria-label'] = ariaLabel || `Download ${getLabel()}`;
+		} else if (ariaLabel || getLabel()) {
+			props['aria-label'] = ariaLabel || getLabel() || '';
 		}
-		if (isFile(link)) {
-			return {
-				download: true,
-				target: '_blank'
-			};
-		}
-		return {};
+
+		return props;
 	};
 
-	const linkClass = 'inline-block text-main w-max';
-	const allLinkClasses = twMerge(linkClass, className);
+	const linkClass = twMerge(
+		'inline-block text-main w-max hover:underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all',
+		className
+	);
+
+	const handleKeyDown = (event: KeyboardEvent) => {
+		if (event.key === 'Enter' || event.key === ' ') {
+			event.preventDefault();
+			(event.currentTarget as HTMLAnchorElement).click();
+		}
+	};
 </script>
 
-<a class={[allLinkClasses]} href={getHref()} {...getLinkProps()}>
+<a class={linkClass} href={getHref()} {...getLinkProps()} onkeydown={handleKeyDown}>
 	{#if getLabel()}
-		{getLabel()}
+		<span class="inline-flex items-center gap-1">
+			{getLabel()}
+			{#if isExternal(link)}
+				<span class="sr-only">(opens in new tab)</span>
+				<ExternalIcon class="h-4 w-4" />
+			{:else if isFile(link)}
+				<span class="sr-only">(download file)</span>
+				<DownloadIcon class="h-4 w-4" />
+			{/if}
+		</span>
 	{:else if children}
 		{@render children()}
 	{/if}
