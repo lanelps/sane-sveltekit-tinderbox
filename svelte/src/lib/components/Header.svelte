@@ -19,7 +19,9 @@
 </script>
 
 <header class="font-main grid-main fixed top-0 right-0 left-0 z-50 p-6">
-	<h1 class="col-span-3">Sane SvelteKit Tinderbox 🔥</h1>
+	<Link link="/" class="col-span-3">
+		<h1>Sane SvelteKit Tinderbox 🔥</h1>
+	</Link>
 
 	<nav class="sm-t:block hidden">
 		<ul class="flex w-full justify-between gap-x-8">
