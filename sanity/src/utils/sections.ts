@@ -9,5 +9,8 @@ export default defineField({
     defineArrayMember({
       type: 'example.section',
     }),
+    defineArrayMember({
+      type: 'media.section',
+    }),
   ],
 })

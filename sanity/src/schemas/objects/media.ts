@@ -31,6 +31,9 @@ export default defineType({
           return true
         }),
       hidden: ({parent}: any) => parent?.type !== 'image',
+      options: {
+        collapsible: false,
+      },
     }),
     defineField({
       name: 'video',
@@ -44,6 +47,9 @@ export default defineType({
           return true
         }),
       hidden: ({parent}: any) => parent?.type !== 'video',
+      options: {
+        collapsible: false,
+      },
     }),
   ],
 
