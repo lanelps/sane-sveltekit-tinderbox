@@ -23,8 +23,8 @@
 		<h1>Sane SvelteKit Tinderbox 🔥</h1>
 	</Link>
 
-	<nav class="sm-t:block hidden">
-		<ul class="flex w-full justify-between gap-x-8">
+	<nav class="sm-t:block col-span-full col-start-4 hidden">
+		<ul class="flex w-full gap-x-8">
 			{#each links as link (link._key)}
 				<li>
 					<Link {link} />
@@ -35,7 +35,7 @@
 
 	<nav
 		class={twMerge(
-			'mobile-nav sm-t:hidden pointer-events-none fixed inset-0 z-40 h-full w-full bg-white p-6 opacity-0 transition-opacity',
+			'sm-t:hidden pointer-events-none fixed inset-0 z-40 h-full w-full bg-white p-6 opacity-0 transition-opacity',
 			nav.isActive && 'pointer-events-auto opacity-100'
 		)}
 		aria-hidden={!nav.isActive}
