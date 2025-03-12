@@ -70,6 +70,8 @@ export interface Video {
 		assetId: string;
 		filename: string;
 	};
+	url: string;
+	type: 'video/mp4' | 'video/webm' | 'video/ogg';
 }
 
 export interface Media {

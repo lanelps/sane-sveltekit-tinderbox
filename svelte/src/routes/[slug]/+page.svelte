@@ -1,13 +1,9 @@
 <script lang="ts">
 	import PageBuilder from '$lib/components/PageBuilder.svelte';
 
-	import type { PageData } from './$types';
+	import type { PageProps } from './$types';
 
-	interface Props {
-		data: PageData;
-	}
-
-	let { data }: Props = $props();
+	let { data }: PageProps = $props();
 </script>
 
 <h1 class="text-title col-span-full">{data?.slug?.current}</h1>

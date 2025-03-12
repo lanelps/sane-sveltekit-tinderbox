@@ -98,9 +98,16 @@ export const sections = `
         _type,
 
         // Example
-        _type == "exampleSection" => {
+        _type == "example.section" => {
             heading,
             content,
+        },
+
+        // Media
+        _type == "media.section" => {
+            media {
+                ${media}
+            },
         },
     },
 `;
