@@ -5,9 +5,7 @@ import type { HomePageData, PageData, ProjectData } from '$lib/types';
 export const siteQuery = `*[_type == "site"][0]{
 	navigation[]{
 		_key,
-		link {
-			${link}
-		}
+		${link}
 	},
 	organization{
 		name,

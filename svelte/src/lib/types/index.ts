@@ -200,10 +200,9 @@ export interface InternalLink {
 
 export type Link = ExternalLink | FileLink | InternalLink | string;
 
-export type Links = {
-	_key: string;
-	link: Link;
-};
+export type SanityLink = ExternalLink | FileLink | InternalLink;
+
+export type Links = Array<{ _key: string } & SanityLink>;
 
 export interface NavStore {
 	readonly isActive: boolean;

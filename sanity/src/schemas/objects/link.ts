@@ -13,6 +13,7 @@ export default defineType({
         list: ['external', 'file', 'internal'],
         direction: 'horizontal',
       },
+      validation: (Rule) => Rule.required(),
       initialValue: 'external',
     }),
     defineField({

@@ -8,7 +8,7 @@
 	import type { Links } from '$lib/types';
 
 	interface Props {
-		links: Links[];
+		links: Links;
 	}
 
 	let { links }: Props = $props();
@@ -23,7 +23,7 @@
 
 	<nav class="sm-t:block hidden">
 		<ul class="flex w-full justify-between gap-x-8">
-			{#each links as { link, _key } (_key)}
+			{#each links as link (link._key)}
 				<li>
 					<Link {link} />
 				</li>
@@ -39,7 +39,7 @@
 		aria-hidden={!nav.isActive}
 	>
 		<ul class="flex w-full flex-col justify-between gap-x-8">
-			{#each links as { link, _key } (_key)}
+			{#each links as link (link._key)}
 				<li>
 					<Link {link} />
 				</li>
