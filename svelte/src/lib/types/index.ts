@@ -252,18 +252,18 @@ export type GetRetinaSizes = (
 // Page Data Types
 
 export type SiteData = {
-	navigation: Links[];
+	navigation: Links;
 	organization: {
 		name: string;
 		logo?: RawImage;
 	};
-	socialLinks: Links[];
+	socialLinks: Links;
 	address?: Address;
 	seo: SEOSite;
 };
 
 export type ParsedSiteData = {
-	navigation: Links[];
+	navigation: Links;
 	organization: {
 		name: string;
 		logo?: Image;
@@ -271,7 +271,7 @@ export type ParsedSiteData = {
 		address?: Address;
 		description?: string;
 	};
-	socialLinks: Links[];
+	socialLinks: Links;
 	seo: SEOSite;
 };
 
