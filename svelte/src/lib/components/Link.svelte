@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { twMerge } from 'tailwind-merge';
 	import type { Snippet } from 'svelte';
-	import type { Link, InternalLink } from '$lib/types';
+	import type { Link, InternalLink, ExternalLink, FileLink } from '$lib/types';
 
 	interface Props {
 		class?: string;
@@ -12,69 +12,60 @@
 
 	let { link, label, class: className, children }: Props = $props();
 
-	// Type guard to verify that a non-string link has a label
-	const hasLabel = (obj: any): obj is { label: string } => {
-		return obj && typeof obj === 'object' && 'label' in obj;
-	};
+	// Type guards
+	const isString = (value: unknown): value is string => typeof value === 'string';
+	const isExternal = (value: unknown): value is ExternalLink =>
+		typeof value === 'object' && value !== null && (value as any).type === 'external';
+	const isInternal = (value: unknown): value is InternalLink =>
+		typeof value === 'object' && value !== null && (value as any).type === 'internal';
+	const isFile = (value: unknown): value is FileLink =>
+		typeof value === 'object' && value !== null && (value as any).type === 'file';
 
-	const isStringLink = typeof link === 'string';
-	const isObjectDefault =
-		typeof link === 'object' && link !== null && link.type === null && hasLabel(link);
-	const isFallback = (link === null || link === undefined) && !!label;
-	const isDefault = isStringLink || isObjectDefault || isFallback;
-	const isExternal = !isDefault && (link as any)?.type === 'external';
-	const isInternal = !isDefault && (link as any)?.type === 'internal';
-	const isFile = !isDefault && (link as any)?.type === 'file';
+	const ignoreInternalTypes = ['homePage', 'page'];
 
-	const displayLabel = (obj: Link): string | null => {
+	const getLabel = (): string | null => {
 		if (label) return label;
-		if (hasLabel(obj)) return obj.label;
+		if (typeof link === 'object' && link !== null && 'label' in link) return link.label;
 		return null;
 	};
 
-	const linkClass = 'inline-block text-main';
-	const linkSpanClass = 'inline-block';
+	const getHref = (): string => {
+		if (isString(link)) return link;
+		if (isExternal(link)) return link.url;
+		if (isFile(link)) return link.file.asset.url;
+		if (isInternal(link)) {
+			const { _type, slug } = link.reference;
+			return ignoreInternalTypes.includes(_type)
+				? `/${slug.current}`
+				: `/${_type}s/${slug.current}`;
+		}
+		return '#';
+	};
+
+	const getLinkProps = () => {
+		if (isExternal(link)) {
+			return {
+				target: link.newTab ? '_blank' : '_self',
+				rel: 'noopener noreferrer'
+			};
+		}
+		if (isFile(link)) {
+			return {
+				download: true,
+				target: '_blank'
+			};
+		}
+		return {};
+	};
+
+	const linkClass = 'inline-block text-main w-max';
 	const allLinkClasses = twMerge(linkClass, className);
 </script>
 
-{#if isDefault}
-	{#if isStringLink}
-		<a class={[allLinkClasses]} href={link as string}>
-			<span class={[linkSpanClass]}>
-				{#if label}
-					{label}
-				{:else if children}
-					{@render children()}
-				{/if}
-			</span>
-		</a>
-	{:else}
-		<span class={[allLinkClasses]}>{displayLabel(link)}</span>
+<a class={[allLinkClasses]} href={getHref()} {...getLinkProps()}>
+	{#if getLabel()}
+		{getLabel()}
+	{:else if children}
+		{@render children()}
 	{/if}
-{/if}
-
-{#if isExternal}
-	<a
-		class={[allLinkClasses]}
-		href={(link as any).url}
-		target={(link as any).newTab ? '_blank' : '_self'}
-		rel="noopener noreferrer"
-	>
-		<span class={[linkSpanClass]}>{displayLabel(link)}</span>
-	</a>
-{/if}
-
-{#if isInternal}
-	<a
-		class={[allLinkClasses]}
-		href={`/${(link as InternalLink).reference._type}s/${(link as InternalLink).reference.slug.current}`}
-	>
-		<span class={[linkSpanClass]}>{displayLabel(link)}</span>
-	</a>
-{/if}
-
-{#if isFile}
-	<a class={[allLinkClasses]} href={(link as any).file.asset.url} download target="_blank">
-		<span class={[linkSpanClass]}>{displayLabel(link)}</span>
-	</a>
-{/if}
+</a>
