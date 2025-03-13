@@ -1,4 +1,4 @@
-import {generateDeskStructure} from '../utils/desk'
+import {generateDeskStructure} from './utils/desk'
 import type {StructureBuilder} from 'sanity/structure'
 
 interface DocumentItem {
