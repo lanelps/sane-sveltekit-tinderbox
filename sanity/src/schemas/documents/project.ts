@@ -39,6 +39,7 @@ export default defineType({
       options: {
         dateFormat: 'YYYY-MM-DD',
       },
+      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'thumbnail',
