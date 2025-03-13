@@ -312,6 +312,7 @@ export type PageData = {
 };
 
 export type ProjectData = {
+	_id: string;
 	title: string;
 	slug: Slug;
 	date: string;
@@ -322,6 +323,7 @@ export type ProjectData = {
 };
 
 export type ProjectListData = {
+	_id: string;
 	title: string;
 	slug: Slug;
 	date: string;
