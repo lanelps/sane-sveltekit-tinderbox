@@ -82,7 +82,9 @@
 </script>
 
 <a class={linkClass} href={getHref()} {...getLinkProps()} onkeydown={handleKeyDown}>
-	{#if getLabel()}
+	{#if children}
+		{@render children()}
+	{:else if getLabel()}
 		<span class="inline-flex items-center gap-1">
 			{getLabel()}
 			{#if isExternal(link)}
@@ -93,7 +95,5 @@
 				<DownloadIcon class="h-4 w-4" />
 			{/if}
 		</span>
-	{:else if children}
-		{@render children()}
 	{/if}
 </a>
