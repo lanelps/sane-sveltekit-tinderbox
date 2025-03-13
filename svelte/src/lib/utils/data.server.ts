@@ -14,11 +14,29 @@ import type {
 	ParsedSchema,
 	SiteData,
 	ParsedSiteData,
-	SettingsData
+	SettingsData,
+	ProjectData,
+	ParsedProjectData,
+	ProjectListData,
+	ParsedProjectListData,
+	ParsedMedia,
+	Media
 } from '$lib/types';
 
 const parseImage = (image: RawImage | undefined, maxWidth?: number): Image | undefined =>
 	image ? getImageProps({ image, maxWidth }) : undefined;
+
+const parseMedia = (
+	media: Media | undefined,
+	{ maxWidth }: { maxWidth?: number } = {}
+): ParsedMedia | undefined => {
+	if (!media) return undefined;
+
+	return {
+		...media,
+		image: parseImage(media.image, maxWidth)
+	};
+};
 
 const parseAuthor = (author: Author | undefined): ParsedAuthor | undefined => {
 	if (!author) return undefined;
@@ -37,8 +55,10 @@ const parseSchema = (schema: Schema | undefined): ParsedSchema | undefined => {
 	};
 };
 
-export const parseSections = (sections: Section[]): ParsedSection[] =>
-	sections?.map((section: Section) => {
+export const parseSections = (sections: Section[] | undefined): ParsedSection[] => {
+	if (!sections) return [];
+
+	return sections.map((section: Section) => {
 		if (section._type === 'media.section') {
 			const mediaSection = section as MediaSection;
 			return {
@@ -51,12 +71,17 @@ export const parseSections = (sections: Section[]): ParsedSection[] =>
 		}
 		return section as ParsedSection;
 	});
+};
 
-export const parseSEO = (seo: SEOPage): ParsedSEOPage => ({
-	...seo,
-	image: parseImage(seo?.image),
-	schema: parseSchema(seo?.schema)
-});
+export const parseSEO = (seo: SEOPage | undefined): ParsedSEOPage | undefined => {
+	if (!seo) return undefined;
+
+	return {
+		...seo,
+		image: parseImage(seo?.image),
+		schema: parseSchema(seo?.schema)
+	};
+};
 
 export const parseSite = (site: SiteData): ParsedSiteData => ({
 	...site,
@@ -67,3 +92,18 @@ export const parseSite = (site: SiteData): ParsedSiteData => ({
 });
 
 export const parseSettings = (settings: SettingsData): SettingsData => settings;
+
+export const parseProjects = (projects: ProjectData[]): ParsedProjectData[] =>
+	projects?.map(({ thumbnail, gallery, sections, seo, ...project }) => ({
+		...project,
+		thumbnail: parseMedia(thumbnail, { maxWidth: 640 }) as ParsedMedia,
+		gallery: gallery.map((img) => parseMedia(img) as ParsedMedia),
+		sections: parseSections(sections),
+		seo: parseSEO(seo)
+	}));
+
+export const parseProjectList = (projects: ProjectListData): ParsedProjectListData =>
+	projects.map((project) => ({
+		...project,
+		thumbnail: parseMedia(project.thumbnail, { maxWidth: 640 }) as ParsedMedia
+	}));
