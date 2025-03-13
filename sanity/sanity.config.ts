@@ -7,6 +7,7 @@ import type {PluginOptions} from 'sanity'
 
 import {schemaTypes} from './src/schemas'
 import {deskStructure} from './src/desk'
+import {resolveLocations} from './src/presentation'
 
 const isDev = process.env.NODE_ENV === 'development'
 const PROJECT_ID = process.env.SANITY_STUDIO_PROJECT_ID
@@ -32,7 +33,10 @@ export default defineConfig({
 
   plugins: [
     structureTool({structure: deskStructure}),
-    presentationTool({previewUrl: PREVIEW_URL}),
+    presentationTool({
+      resolve: resolveLocations,
+      previewUrl: PREVIEW_URL,
+    }),
     isDev ? visionTool() : null,
   ].filter((plugin): plugin is PluginOptions => plugin !== null),
 
