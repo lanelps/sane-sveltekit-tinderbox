@@ -1,6 +1,6 @@
 import { sanityClient } from '$lib/utils/sanity.server';
-import { image, link, sections, siteSEO, pageSEO } from '$lib/utils/groq.server';
-import type { HomePageData, PageData, ProjectData } from '$lib/types';
+import { image, link, sections, siteSEO, pageSEO, media } from '$lib/utils/groq.server';
+import type { HomePageData, PageData, ProjectData, ProjectListData } from '$lib/types';
 
 export const siteQuery = `*[_type == "site"][0]{
 	navigation[]{
@@ -70,7 +70,7 @@ export const projectListQuery = `*[_type == "project"] {
 	},
 	date,
 	thumbnail {
-		${image}
+		${media}
 	},
 }`;
 
@@ -104,7 +104,7 @@ export const fetchProject = async (slug: string): Promise<ProjectData> => {
 	return project;
 };
 
-export const fetchProjects = async (): Promise<ProjectData[]> => {
+export const fetchProjects = async (): Promise<ProjectListData> => {
 	const projects = await sanityClient.fetch(projectListQuery);
 	if (!projects) throw new Error('Error fetching projects data');
 	return projects;
