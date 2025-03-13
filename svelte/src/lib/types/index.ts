@@ -44,6 +44,7 @@ export interface RawImage {
 }
 
 export interface Image {
+	alt: string;
 	src: string;
 	srcset: string;
 	sizes: string;
@@ -78,6 +79,13 @@ export interface Media {
 	_key?: string | undefined;
 	type: 'image' | 'video';
 	image?: RawImage;
+	video?: Video;
+}
+
+export interface ParsedMedia {
+	_key?: string | undefined;
+	type: 'image' | 'video';
+	image?: Image;
 	video?: Video;
 }
 
@@ -307,20 +315,41 @@ export type ProjectData = {
 	title: string;
 	slug: Slug;
 	date: string;
-	thumbnail: RawImage;
-	gallery: RawImage[];
-	sections: Section[];
-	seo: SEOPage;
+	thumbnail: Media;
+	gallery: Media[];
+	sections: Section[] | undefined;
+	seo: SEOPage | undefined;
 };
 
+export type ProjectListData = {
+	title: string;
+	slug: Slug;
+	date: string;
+	thumbnail: Media;
+}[];
+
+export type ParsedProjectData = {
+	_id: string;
+	title: string;
+	slug: Slug;
+	date: string;
+	thumbnail: ParsedMedia;
+	gallery: ParsedMedia[];
+	sections: ParsedSection[];
+	seo: ParsedSEOPage | undefined;
+};
+
+export type ParsedProjectListData = {
+	_id: string;
+	title: string;
+	slug: Slug;
+	date: string;
+	thumbnail: ParsedMedia;
+}[];
+
 export type ProjectsPageData = {
-	projects: {
-		_id: string;
-		title: string;
-		slug: Slug;
-		date: string;
-		thumbnail: RawImage;
-	}[];
+	title: string;
+	projects: ParsedProjectData[];
 };
 
 // Sections
