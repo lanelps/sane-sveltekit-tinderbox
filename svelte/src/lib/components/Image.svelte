@@ -26,7 +26,7 @@
 		sizes={image.sizes}
 		width={image.width}
 		height={image.height}
-		alt={image?.placeholder || ''}
+		alt={image?.alt || ''}
 		onload={() => (loaded = true)}
 	/>
 </div>
