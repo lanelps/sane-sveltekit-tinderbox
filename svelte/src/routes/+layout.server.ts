@@ -1,18 +1,31 @@
 import { error } from '@sveltejs/kit';
 
-import { parseSite } from '$lib/utils/data.server';
-import { fetchSettings, fetchSite } from '$lib/utils/queries.server';
+import { fetchSettings, fetchSite } from '$lib/utils/data.server';
 
-import type { LayoutData } from '$lib/types';
-import type { LayoutServerLoad } from './$types';
+import type { SiteData, SettingsData } from '$lib/types';
+import type { LayoutServerLoad, LayoutParams } from './$types';
+import type { QueryResponseInitial } from '@sanity/svelte-loader';
 
-export const load: LayoutServerLoad = async (): Promise<LayoutData> => {
+export const load: LayoutServerLoad = async ({
+	params,
+	locals: { preview, loadQuery }
+}): Promise<{
+	params: LayoutParams;
+	initialSite: QueryResponseInitial<SiteData>;
+	initialSettings: QueryResponseInitial<SettingsData>;
+	preview: boolean;
+}> => {
 	try {
-		const [site, settings] = await Promise.all([fetchSite(), fetchSettings()]);
+		const [initialSite, initialSettings] = await Promise.all([
+			fetchSite(loadQuery),
+			fetchSettings(loadQuery)
+		]);
 
 		return {
-			site: parseSite(site),
-			settings
+			initialSite,
+			initialSettings,
+			preview,
+			params
 		};
 	} catch (err) {
 		console.error(err);

@@ -1,24 +1,18 @@
-import { parseSections } from '$lib/utils/data.server';
-import { fetchProject } from '$lib/utils/queries.server';
 import { error } from '@sveltejs/kit';
-import type { ProjectData, ParsedSection } from '$lib/types';
+import { fetchProject } from '$lib/utils/data.server';
+
+import type { ProjectData } from '$lib/types';
 import type { PageServerLoad } from './$types';
+import type { QueryResponseInitial } from '@sanity/svelte-loader';
 
-type ReturnedData = Omit<ProjectData, 'sections'> & {
-	sections: ParsedSection[];
-};
-
-export const load: PageServerLoad = async ({ params }): Promise<ReturnedData> => {
-	// if we load the home page, return
-	// if (params.slug === 'favicon.ico') return;
-
+export const load: PageServerLoad = async ({
+	params,
+	locals: { loadQuery }
+}): Promise<{ initial: QueryResponseInitial<ProjectData>; seo: { title: string } }> => {
 	try {
-		const data = await fetchProject(params.slug);
+		const initial = await fetchProject(loadQuery, params.slug);
 
-		return {
-			...data,
-			sections: parseSections(data?.sections)
-		};
+		return { initial, seo: { title: initial?.data?.seo?.title || initial.data.title } };
 	} catch (err) {
 		console.error(err);
 		throw error(500, 'Internal Server Error');

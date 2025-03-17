@@ -82,13 +82,6 @@ export interface Media {
 	video?: Video;
 }
 
-export interface ParsedMedia {
-	_key?: string | undefined;
-	type: 'image' | 'video';
-	image?: Image;
-	video?: Video;
-}
-
 export interface Address {
 	street: string;
 	city: string;
@@ -115,12 +108,6 @@ export interface Author {
 	image?: RawImage;
 }
 
-export interface ParsedAuthor {
-	name: string;
-	url?: string;
-	image?: Image;
-}
-
 export type SchemaType =
 	| WebPage['@type']
 	| Article['@type']
@@ -140,13 +127,6 @@ export interface Schema {
 	modifiedAt?: string;
 }
 
-export interface ParsedSchema {
-	type: SchemaType;
-	author?: ParsedAuthor;
-	publishedAt?: string;
-	modifiedAt?: string;
-}
-
 export interface SEOPage {
 	title?: string;
 	description?: string;
@@ -155,14 +135,6 @@ export interface SEOPage {
 	createdAt?: string;
 	updatedAt?: string;
 	schema?: Schema;
-}
-
-export interface ParsedSEOPage {
-	title?: string;
-	description?: string;
-	keywords?: string[];
-	image?: Image;
-	schema?: ParsedSchema;
 }
 
 export interface SEOSite {
@@ -231,12 +203,13 @@ export type GetImageProps = (props: {
 	maxWidth?: number;
 	minimumWidthStep?: number;
 	customWidthSteps?: number[];
-}) => Image;
+}) => Image | undefined;
 
 export type ProcessImage = (
 	img: RawImage,
 	maxWidth: number
 ) => {
+	alt: string;
 	src: string;
 	srcset: string;
 	sizes: string;
@@ -264,24 +237,13 @@ export type GetRetinaSizes = (
 export type SiteData = {
 	navigation: Links;
 	organization: {
-		name: string;
+		name?: string;
+		description?: string;
 		logo?: RawImage;
+		address?: Address;
 	};
 	socialLinks: Links;
 	address?: Address;
-	seo: SEOSite;
-};
-
-export type ParsedSiteData = {
-	navigation: Links;
-	organization: {
-		name: string;
-		logo?: Image;
-		sameAs?: string[];
-		address?: Address;
-		description?: string;
-	};
-	socialLinks: Links;
 	seo: SEOSite;
 };
 
@@ -295,7 +257,7 @@ export type SettingsData = {
 };
 
 export type LayoutData = {
-	site: ParsedSiteData;
+	site: SiteData;
 	settings: SettingsData;
 };
 
@@ -316,13 +278,12 @@ export type ProjectData = {
 	title: string;
 	slug: Slug;
 	date: string;
-	thumbnail: Media;
 	gallery: Media[];
 	sections: Section[] | undefined;
 	seo: SEOPage | undefined;
 };
 
-export type ProjectListData = {
+export type ProjectsPageData = {
 	_id: string;
 	title: string;
 	slug: Slug;
@@ -330,49 +291,28 @@ export type ProjectListData = {
 	thumbnail: Media;
 }[];
 
-export type ParsedProjectData = {
-	_id: string;
+export type ProjectPageData = {
 	title: string;
-	slug: Slug;
-	date: string;
-	thumbnail: ParsedMedia;
-	gallery: ParsedMedia[];
-	sections: ParsedSection[];
-	seo: ParsedSEOPage | undefined;
-};
-
-export type ParsedProjectListData = {
-	_id: string;
-	title: string;
-	slug: Slug;
-	date: string;
-	thumbnail: ParsedMedia;
-}[];
-
-export type ProjectsPageData = {
-	title: string;
-	projects: ParsedProjectData[];
+	projects: ProjectData[];
 };
 
 // Sections
 
-export interface ExampleSection {
+export interface BaseSection {
 	_key: string;
+	_type: string;
+	// Add other common properties
+}
+
+export interface ExampleSection extends BaseSection {
 	_type: 'example.section';
 	heading: string;
 	content: PortableTextBlock[];
 }
 
-export interface MediaSection {
-	_key: string;
+export interface MediaSection extends BaseSection {
 	_type: 'media.section';
 	media: Media;
 }
 
 export type Section = ExampleSection | MediaSection;
-
-export interface ParsedMediaSection extends Omit<MediaSection, 'media'> {
-	media: Omit<Media, 'image'> & { image: Image };
-}
-
-export type ParsedSection = ExampleSection | ParsedMediaSection;

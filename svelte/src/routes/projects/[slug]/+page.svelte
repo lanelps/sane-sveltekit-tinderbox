@@ -1,15 +1,20 @@
 <script lang="ts">
 	import PageBuilder from '$lib/components/PageBuilder.svelte';
 
-	import type { PageData } from './$types';
+	import { useProjectPage } from '$lib/utils/queryHooks';
 
-	interface Props {
-		data: PageData;
-	}
+	import type { PageProps } from './$types';
 
-	let { data }: Props = $props();
+	let { data }: PageProps = $props();
+
+	const query = useProjectPage(data.params.slug ?? '', data.initial);
+	const { data: project, loading, encodeDataAttribute } = $derived($query);
 </script>
 
-<h1 class="text-title col-span-full">{data?.slug?.current}</h1>
+{#if loading}
+	<p>Loading...</p>
+{:else}
+	<h1 class="text-title col-span-full">{project.slug.current}</h1>
 
-<PageBuilder sections={data?.sections} />
+	<PageBuilder sections={project?.sections} />
+{/if}

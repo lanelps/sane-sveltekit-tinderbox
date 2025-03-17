@@ -1,7 +1,5 @@
-import { SANITY_PROJECT_ID, SANITY_DATASET } from '$env/static/private';
-
-import { createClient } from '@sanity/client';
 import imageUrlBuilder from '@sanity/image-url';
+import { sanityClient } from '$lib/utils/sanity/client';
 
 import type {
 	UrlFor,
@@ -10,13 +8,6 @@ import type {
 	GetImageDimensions,
 	GetRetinaSizes
 } from '$lib/types';
-
-export const sanityClient = createClient({
-	projectId: SANITY_PROJECT_ID,
-	dataset: SANITY_DATASET,
-	apiVersion: '2025-03-01',
-	useCdn: true
-});
 
 const LARGEST_VIEWPORT = 1920;
 
@@ -100,6 +91,7 @@ export const getImageProps: GetImageProps = ({
 		const retinaSizes = getRetinaSizes(baseSizes, imageWidth, maxWidth, minimumWidthStep);
 
 		return {
+			alt: img?.alt || '',
 			src: urlFor(img).width(maxWidth).url(),
 			srcset: retinaSizes.map((size) => `${urlFor(img).width(size).url()} ${size}w`).join(', '),
 			sizes: userMaxWidth

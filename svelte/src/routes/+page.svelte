@@ -1,11 +1,18 @@
 <script lang="ts">
-	import type { PageData } from './$types';
+	import { useHomePage } from '$lib/utils/queryHooks';
 
-	interface Props {
-		data: PageData;
-	}
+	import type { PageProps } from './$types';
 
-	let { data }: Props = $props();
+	let { data }: PageProps = $props();
+
+	const query = useHomePage(data.initial);
+	const { data: home, loading, encodeDataAttribute } = $derived($query);
 </script>
 
-<h1 class="text-title col-span-full">Welcome to Sane SvelteKit Tinderbox 🔥</h1>
+{#if loading}
+	<div>Loading...</div>
+{:else}
+	<h1 class="text-title col-span-full" data-sanity={encodeDataAttribute(['title'])}>
+		Welcome to Sane SvelteKit Tinderbox {home.title} 🔥
+	</h1>
+{/if}

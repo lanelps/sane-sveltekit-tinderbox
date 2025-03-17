@@ -35,16 +35,36 @@ export default defineType({
       type: 'object',
       group: 'branding',
       fields: [
-        {
+        defineField({
           name: 'name',
           title: 'Name',
           type: 'string',
-        },
-        {
+        }),
+        defineField({
           name: 'logo',
           title: 'Logo',
           type: 'image',
-        },
+        }),
+        defineField({
+          name: 'description',
+          title: 'Description',
+          type: 'text',
+        }),
+        defineField({
+          name: 'address',
+          title: 'Address',
+          type: 'object',
+          fields: [
+            {name: 'street', type: 'string', title: 'Street'},
+            {name: 'city', type: 'string', title: 'City'},
+            {name: 'state', type: 'string', title: 'State'},
+            {name: 'zipCode', type: 'string', title: 'Zip Code'},
+            {name: 'country', type: 'string', title: 'Country'},
+          ],
+          options: {
+            collapsible: true,
+          },
+        }),
       ],
     }),
     defineField({
@@ -53,22 +73,6 @@ export default defineType({
       type: 'array',
       group: 'branding',
       of: [{type: 'link'}],
-    }),
-    defineField({
-      name: 'address',
-      title: 'Address',
-      type: 'object',
-      group: 'branding',
-      fields: [
-        {name: 'street', type: 'string', title: 'Street'},
-        {name: 'city', type: 'string', title: 'City'},
-        {name: 'state', type: 'string', title: 'State'},
-        {name: 'zipCode', type: 'string', title: 'Zip Code'},
-        {name: 'country', type: 'string', title: 'Country'},
-      ],
-      options: {
-        collapsible: true,
-      },
     }),
     // SEO
     defineField({

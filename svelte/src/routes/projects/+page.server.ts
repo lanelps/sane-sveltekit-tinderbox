@@ -1,11 +1,17 @@
 import { error } from '@sveltejs/kit';
-import { fetchProjects } from '$lib/utils/queries.server';
-import { parseProjectList } from '$lib/utils/data.server';
+import { fetchProjects } from '$lib/utils/data.server';
+
+import type { ProjectsPageData } from '$lib/types';
 import type { PageServerLoad } from './$types';
-export const load: PageServerLoad = async () => {
+import type { QueryResponseInitial } from '@sanity/svelte-loader';
+
+export const load: PageServerLoad = async ({
+	locals: { loadQuery }
+}): Promise<{ initial: QueryResponseInitial<ProjectsPageData>; seo: { title: 'Projects' } }> => {
 	try {
-		const projects = await fetchProjects();
-		return { title: 'Projects', projects: parseProjectList(projects) };
+		const initial = await fetchProjects(loadQuery);
+
+		return { initial, seo: { title: 'Projects' } };
 	} catch (err) {
 		console.error(err);
 		throw error(500, 'Internal Server Error');

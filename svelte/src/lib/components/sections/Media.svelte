@@ -1,9 +1,9 @@
 <script lang="ts">
-	import type { ParsedMediaSection } from '$lib/types';
+	import type { MediaSection } from '$lib/types';
 	import Media from '$lib/components/Media.svelte';
 
 	interface Props {
-		data: ParsedMediaSection;
+		data: MediaSection;
 	}
 
 	let { data }: Props = $props();

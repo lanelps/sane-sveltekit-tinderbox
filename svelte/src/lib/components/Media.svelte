@@ -1,11 +1,11 @@
 <script lang="ts">
-	import type { ParsedMedia } from '$lib/types';
+	import type { Media } from '$lib/types';
 
 	import Image from '$lib/components/Image.svelte';
 	import Video from '$lib/components/Video.svelte';
 
 	interface Props {
-		media: ParsedMedia;
+		media: Media;
 	}
 
 	let { media }: Props = $props();

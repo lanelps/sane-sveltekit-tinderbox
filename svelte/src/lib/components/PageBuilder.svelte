@@ -2,34 +2,23 @@
 	import ExampleSection from '$lib/components/sections/Example.svelte';
 	import MediaSection from '$lib/components/sections/Media.svelte';
 
-	import type { ParsedSection } from '$lib/types';
+	import type { Section } from '$lib/types';
 
 	interface Props {
-		sections: ParsedSection[];
+		sections?: Section[];
 	}
 
 	let { sections }: Props = $props();
-
-	const sectionType = (type: string) => {
-		switch (type) {
-			case 'example.section':
-				return ExampleSection;
-
-			case 'media.section':
-				return MediaSection;
-			default:
-				return null;
-		}
-	};
 </script>
 
-{#if sections}
-	<div class="relative col-span-full flex w-full gap-y-16">
+<div class="relative col-span-full flex w-full gap-y-16">
+	{#if sections && sections.length > 0}
 		{#each sections as section (section._key)}
-			{@const Section = sectionType(section?._type)}
-			{#if Section}
-				<Section data={section} />
+			{#if section._type === 'example.section'}
+				<ExampleSection data={section} />
+			{:else if section._type === 'media.section'}
+				<MediaSection data={section} />
 			{/if}
 		{/each}
-	</div>
-{/if}
+	{/if}
+</div>

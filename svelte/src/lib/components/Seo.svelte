@@ -1,30 +1,37 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { serializeSchema } from '$lib/utils/json-ld';
-	import type { SEOPage, ParsedSiteData } from '$lib/types';
+	import type { SEOPage, SiteData } from '$lib/types';
 	import type {
 		Schema,
 		JsonLdOrganization,
 		JsonLdWebPage,
 		JsonLdBreadcrumbItem
 	} from '$lib/utils/json-ld';
+	import { urlFor, getImageProps } from '$lib/utils/sanity/client/image';
 
 	interface Props {
 		seo: SEOPage;
 		title: string;
-		settings: ParsedSiteData;
+		site: SiteData;
 	}
-	let { seo, title, settings }: Props = $props();
+	let { seo, title, site }: Props = $props();
 
 	// Compute basic SEO values with fallbacks
 	const pageTitle = $derived(seo?.title || title || '');
-	const siteTitle = $derived(settings?.seo?.title);
+	const siteTitle = $derived(site?.seo?.title);
 	const finalTitle = $derived(
-		siteTitle ? `${pageTitle || ''} | ${siteTitle}` : pageTitle || siteTitle || ''
+		pageTitle && siteTitle ? `${pageTitle} | ${siteTitle}` : pageTitle || siteTitle || ''
 	);
-	const finalDescription = $derived(seo?.description || settings?.seo?.description || '');
-	const finalKeywords = $derived(seo?.keywords || settings?.seo?.keywords || []);
-	const finalImage = $derived(seo?.image || settings?.seo?.image);
+	const finalDescription = $derived(seo?.description || site?.seo?.description || '');
+	const finalKeywords = $derived(seo?.keywords || site?.seo?.keywords || []);
+	const finalImage = $derived(
+		seo?.image
+			? getImageProps({ image: seo.image })
+			: site?.seo?.image && getImageProps({ image: site.seo.image })
+	);
+
+	const finalFavicon = $derived(site?.seo?.favicon && urlFor(site.seo.favicon).width(512).url());
 
 	// Generate breadcrumbs from URL
 	const breadcrumbItems = $derived(() => {
@@ -47,38 +54,41 @@
 
 	// Compute organization schema
 	const orgSchema = $derived(() => {
-		if (!settings?.organization?.name || !page?.url?.origin) return null;
+		if (!site?.organization?.name || !page?.url?.origin) return null;
+
+		const organizationLogo =
+			site.organization.logo && getImageProps({ image: site.organization.logo });
 
 		const org: JsonLdOrganization = {
 			'@type': 'Organization',
 			'@id': `${page.url.origin}/#organization`,
-			name: settings.organization.name,
+			name: site.organization.name,
 			url: page.url.origin
 		};
 
-		if (settings.organization.logo?.src) {
+		if (organizationLogo?.src) {
 			org.logo = {
 				'@type': 'ImageObject',
 				'@id': `${page.url.origin}/#logo`,
-				url: settings.organization.logo.src,
-				width: settings.organization.logo.width || 0,
-				height: settings.organization.logo.height || 0,
-				caption: settings.organization.name
+				url: organizationLogo.src,
+				width: organizationLogo.width || 0,
+				height: organizationLogo.height || 0,
+				caption: site.organization.name
 			};
 		}
 
-		if (settings.organization.description) {
-			org.description = settings.organization.description;
+		if (site.organization.description) {
+			org.description = site.organization.description;
 		}
 
-		if (settings.organization.address) {
+		if (site.organization.address) {
 			org.address = {
 				'@type': 'PostalAddress',
-				streetAddress: settings.organization.address.street,
-				addressLocality: settings.organization.address.city,
-				addressRegion: settings.organization.address.state,
-				postalCode: settings.organization.address.zipCode,
-				addressCountry: settings.organization.address.country
+				streetAddress: site.organization.address.street,
+				addressLocality: site.organization.address.city,
+				addressRegion: site.organization.address.state,
+				postalCode: site.organization.address.zipCode,
+				addressCountry: site.organization.address.country
 			};
 		}
 
@@ -87,7 +97,7 @@
 
 	// Compute page schema
 	const pageSchema = $derived(() => {
-		if (!settings?.organization?.name || !page?.url?.href) return null;
+		if (!site?.organization?.name || !page?.url?.href) return null;
 
 		const schema: JsonLdWebPage = {
 			'@type': seo?.schema?.type || 'WebPage',
@@ -104,13 +114,13 @@
 			schema.description = finalDescription;
 		}
 
-		if (finalImage?.url) {
+		if (finalImage?.src) {
 			schema.image = {
 				'@type': 'ImageObject',
 				'@id': `${page.url.href}#primaryimage`,
-				url: finalImage.url,
-				width: finalImage.dimensions?.width || 0,
-				height: finalImage.dimensions?.height || 0,
+				url: finalImage.src,
+				width: finalImage.width || 0,
+				height: finalImage.height || 0,
 				caption: finalImage.alt || ''
 			};
 		}
@@ -179,8 +189,8 @@
 	{#if finalDescription}
 		<meta property="og:description" content={finalDescription} />
 	{/if}
-	{#if finalImage?.url}
-		<meta property="og:image" content={finalImage.url} />
+	{#if finalImage?.src}
+		<meta property="og:image" content={finalImage.src} />
 	{/if}
 
 	<!-- Twitter Card -->
@@ -189,13 +199,13 @@
 	{#if finalDescription}
 		<meta name="twitter:description" content={finalDescription} />
 	{/if}
-	{#if finalImage?.url}
-		<meta name="twitter:image" content={finalImage.url} />
+	{#if finalImage?.src}
+		<meta name="twitter:image" content={finalImage.src} />
 	{/if}
 
 	<!-- Favicon -->
-	{#if settings?.seo?.favicon?.url}
-		<link rel="icon" href={settings.seo.favicon.url} />
+	{#if finalFavicon}
+		<link rel="icon" href={finalFavicon} />
 	{/if}
 
 	<!-- JSON-LD Schema -->

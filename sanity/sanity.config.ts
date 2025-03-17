@@ -12,7 +12,7 @@ import {resolveLocations} from './src/presentation'
 const isDev = process.env.NODE_ENV === 'development'
 const PROJECT_ID = process.env.SANITY_STUDIO_PROJECT_ID
 const DATASET = process.env.SANITY_STUDIO_DATASET
-const PREVIEW_URL = process.env.SANITY_STUDIO_PREVIEW_URL || 'http://localhost:4321/'
+const PREVIEW_URL = process.env.SANITY_STUDIO_PREVIEW_URL || 'http://localhost:5173/'
 
 if (!PROJECT_ID || !DATASET) {
   throw new Error(
@@ -35,7 +35,13 @@ export default defineConfig({
     structureTool({structure: deskStructure}),
     presentationTool({
       resolve: resolveLocations,
-      previewUrl: PREVIEW_URL,
+      previewUrl: {
+        origin: PREVIEW_URL,
+        previewMode: {
+          enable: '/preview/enable',
+          disable: '/preview/disable',
+        },
+      },
     }),
     isDev ? visionTool() : null,
   ].filter((plugin): plugin is PluginOptions => plugin !== null),
