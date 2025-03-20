@@ -1,9 +1,9 @@
-import {defineLocations} from 'sanity/presentation'
+import {defineLocations, PresentationPluginOptions} from 'sanity/presentation'
 
 type PageDocument = Record<'title' | 'slug', any>
 type ProjectDocument = Record<'title' | 'slug', any>
 
-export const resolveLocations = {
+export const resolveLocations: PresentationPluginOptions['resolve'] = {
   locations: {
     page: defineLocations({
       select: {title: 'title', slug: 'slug.current'},
