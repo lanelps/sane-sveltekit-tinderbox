@@ -1,21 +1,21 @@
 import type { NavStore } from '$lib/types';
 
 const createNav = (): NavStore => {
-	let isActive: boolean = $state(false);
+	let isOpen: boolean = $state(false);
 
 	const toggle = (): void => {
-		isActive = !isActive;
+		isOpen = !isOpen;
 	};
 	const open = (): void => {
-		isActive = true;
+		isOpen = true;
 	};
 	const close = (): void => {
-		isActive = false;
+		isOpen = false;
 	};
 
 	return {
-		get isActive(): boolean {
-			return isActive;
+		get isOpen(): boolean {
+			return isOpen;
 		},
 		toggle,
 		open,

@@ -36,9 +36,9 @@
 	<nav
 		class={twMerge(
 			'sm-t:hidden pointer-events-none fixed inset-0 z-40 h-full w-full bg-white p-6 opacity-0 transition-opacity',
-			nav.isActive && 'pointer-events-auto opacity-100'
+			nav.isOpen && 'pointer-events-auto opacity-100'
 		)}
-		aria-hidden={!nav.isActive}
+		aria-hidden={!nav.isOpen}
 	>
 		<ul class="flex w-full flex-col justify-between gap-x-8">
 			{#each links as link (link._key)}
@@ -50,6 +50,6 @@
 	</nav>
 
 	<button class="sm-t:hidden absolute top-6 right-6 z-50 cursor-pointer" onclick={nav.toggle}
-		>{nav.isActive ? `Close` : `Open`} menu</button
+		>{nav.isOpen ? `Close` : `Open`} menu</button
 	>
 </header>
