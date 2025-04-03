@@ -3,6 +3,8 @@ import {
 	settingsQuery,
 	homePageQuery,
 	pageQuery,
+	productQuery,
+	productsQuery,
 	projectQuery,
 	projectsPageQuery
 } from '$lib/utils/queries';
@@ -10,8 +12,10 @@ import {
 import type {
 	HomePageData,
 	PageData,
+	ProductData,
+	ProductsData,
 	ProjectData,
-	ProjectsPageData,
+	ProjectsData,
 	SiteData,
 	SettingsData
 } from '$lib/types';
@@ -59,8 +63,25 @@ export const fetchProject = async (
 
 export const fetchProjects = async (
 	loadQuery: LoadQuery
-): Promise<QueryResponseInitial<ProjectsPageData>> => {
-	const initialProjects = await loadQuery<ProjectsPageData>(projectsPageQuery);
+): Promise<QueryResponseInitial<ProjectsData>> => {
+	const initialProjects = await loadQuery<ProjectsData>(projectsPageQuery);
 	if (!initialProjects) throw new Error('Error fetching projects data');
 	return initialProjects;
+};
+
+export const fetchProduct = async (
+	loadQuery: LoadQuery,
+	slug: string
+): Promise<QueryResponseInitial<ProductData>> => {
+	const initialProduct = await loadQuery<ProductData>(productQuery, { slug });
+	if (!initialProduct) throw new Error('Error fetching product data');
+	return initialProduct;
+};
+
+export const fetchProducts = async (
+	loadQuery: LoadQuery
+): Promise<QueryResponseInitial<ProductsData>> => {
+	const initialProducts = await loadQuery<ProductsData>(productsQuery);
+	if (!initialProducts) throw new Error('Error fetching products data');
+	return initialProducts;
 };
