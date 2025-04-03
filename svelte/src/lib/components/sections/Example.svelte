@@ -10,7 +10,7 @@
 	let { data }: Props = $props();
 </script>
 
-<section class="relative flex flex-col">
+<section class="relative col-span-full flex flex-col">
 	<h1 class="text-lg font-bold">{data.heading}</h1>
 	<PortableText value={data?.content} />
 </section>

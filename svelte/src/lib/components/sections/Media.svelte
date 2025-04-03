@@ -9,6 +9,6 @@
 	let { data }: Props = $props();
 </script>
 
-<section class="relative w-full">
+<section class="relative col-span-full w-full">
 	<Media media={data.media} />
 </section>
