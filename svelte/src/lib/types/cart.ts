@@ -16,7 +16,7 @@ export interface CartStore {
 	readonly isOpen: boolean;
 	readonly items: CartItem[];
 	readonly cartId: string | null;
-	toggle(): void;
+	toggle(e: Event): void;
 	open(): void;
 	close(): void;
 	addItem(item: CartItem): void;
