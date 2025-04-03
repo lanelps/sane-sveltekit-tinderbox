@@ -3,8 +3,6 @@ import {
 	homePageQuery,
 	pageQuery,
 	productQuery,
-	productsQuery,
-	projectsPageQuery,
 	siteQuery,
 	settingsQuery
 } from '$lib/utils/queries';
@@ -13,8 +11,6 @@ import type {
 	HomePageData,
 	PageData,
 	ProductData,
-	ProductsData,
-	ProjectsData,
 	ProjectData,
 	SiteData,
 	SettingsData
@@ -33,14 +29,8 @@ export const useHomePage = (initial: QueryResponseInitial<HomePageData>) =>
 export const usePage = (slug: string, initial: QueryResponseInitial<PageData>) =>
 	useQuery<PageData>(pageQuery, { slug }, { initial });
 
-export const useProjectsPage = (initial: QueryResponseInitial<ProjectsData>) =>
-	useQuery<ProjectsData>(projectsPageQuery, {}, { initial });
-
 export const useProjectPage = (slug: string, initial: QueryResponseInitial<ProjectData>) =>
 	useQuery<ProjectData>(pageQuery, { slug }, { initial });
 
 export const useProductPage = (slug: string, initial: QueryResponseInitial<ProductData>) =>
 	useQuery<ProductData>(productQuery, { slug }, { initial });
-
-export const useProductsPage = (initial: QueryResponseInitial<ProductsData>) =>
-	useQuery<ProductsData>(productsQuery, {}, { initial });
