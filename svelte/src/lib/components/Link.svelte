@@ -1,99 +1,89 @@
 <script lang="ts">
 	import { twMerge } from 'tailwind-merge';
 	import type { Snippet } from 'svelte';
-
-	import ExternalIcon from '$lib/assets/svg/External.svelte';
-	import DownloadIcon from '$lib/assets/svg/Download.svelte';
-
-	import type { Link, InternalLink, ExternalLink, FileLink } from '$lib/types';
+	import type { Link, ExternalLink, FileLink, InternalLink, ObjLink } from '$lib/types';
 
 	interface Props {
 		class?: string;
 		link: Link;
 		label?: string;
 		children?: Snippet;
-		ariaLabel?: string;
 	}
 
-	let { link, label, class: className, children, ariaLabel }: Props = $props();
+	let { class: className, link, label, children }: Props = $props();
 
-	// Type guards
-	const isString = (value: unknown): value is string => typeof value === 'string';
-	const isExternal = (value: unknown): value is ExternalLink =>
-		typeof value === 'object' && value !== null && (value as any).type === 'external';
-	const isInternal = (value: unknown): value is InternalLink =>
-		typeof value === 'object' && value !== null && (value as any).type === 'internal';
-	const isFile = (value: unknown): value is FileLink =>
-		typeof value === 'object' && value !== null && (value as any).type === 'file';
+	// Helper function to check if a link matches a specific type
+	const isType = <T extends Link>(link: Link, type: string): link is T =>
+		typeof link === 'object' && link !== null && 'type' in link && link.type === type;
 
-	const ignoreInternalTypes = ['homePage', 'page'];
+	// Type guard functions to determine the specific type of link
+	const isExternalLink = (link: Link): link is ExternalLink =>
+		isType<ExternalLink>(link, 'external');
+	const isFileLink = (link: Link): link is FileLink => isType<FileLink>(link, 'file');
+	const isInternalLink = (link: Link): link is InternalLink =>
+		isType<InternalLink>(link, 'internal');
+	const isObjLink = (link: Link): link is ObjLink =>
+		typeof link === 'object' && link !== null && !('type' in link) && 'url' in link;
+	const isStringLink = (link: Link): link is string => typeof link === 'string';
 
-	const getLabel = (): string | null => {
-		if (label) return label;
-		if (typeof link === 'object' && link !== null && 'label' in link) return link.label;
+	// Helper function to determine if we need to include reference type in URL
+	const shouldIncludeType = (link: InternalLink): boolean => {
+		return link.reference._type !== 'page';
+	};
+
+	// Configuration object that defines how different types of links should be rendered
+	const linkConfig = {
+		string: (link: string) => ({ href: `/${link}/` }),
+		external: (link: ExternalLink) => ({
+			href: link.url,
+			target: link.newTab ? '_blank' : '_self',
+			rel: 'noopener noreferrer'
+		}),
+		internal: (link: InternalLink) => {
+			const typePath = shouldIncludeType(link) ? `${link.reference._type}s/` : '';
+			return {
+				href: `/${typePath}${link.reference.slug.current}/`
+			};
+		},
+		file: (link: FileLink) => ({
+			href: link.file.asset.url,
+			download: true,
+			target: '_blank'
+		}),
+		obj: (link: ObjLink) => ({ href: link.url })
+	};
+
+	// Determine the appropriate link attributes based on the link type
+	const getLinkAttributes = () => {
+		if (!link) return null;
+		if (isStringLink(link)) return linkConfig.string(link);
+		if (isExternalLink(link)) return linkConfig.external(link);
+		if (isInternalLink(link)) return linkConfig.internal(link);
+		if (isFileLink(link)) return linkConfig.file(link);
+		if (isObjLink(link)) return linkConfig.obj(link);
 		return null;
 	};
 
-	const getHref = (): string => {
-		if (isString(link)) return link;
-		if (isExternal(link)) return link.url;
-		if (isFile(link)) return link.file.asset.url;
-		if (isInternal(link)) {
-			const { _type, slug } = link.reference;
-			return ignoreInternalTypes.includes(_type)
-				? `/${slug.current}`
-				: `/${_type}s/${slug.current}`;
-		}
-		return '#';
-	};
+	// Base styling for all links with option to merge additional classes
+	const linkClass = 'inline-block text-b1';
+	let allLinkClasses = $derived(twMerge(linkClass, className));
 
-	const getLinkProps = () => {
-		const props: Record<string, string | boolean> = {
-			role: 'link',
-			tabindex: '0'
-		};
-
-		if (isExternal(link)) {
-			props.target = link.newTab ? '_blank' : '_self';
-			props.rel = 'noopener noreferrer';
-			props['aria-label'] = ariaLabel || `${getLabel()} (opens in new tab)`;
-		} else if (isFile(link)) {
-			props.download = true;
-			props.target = '_blank';
-			props['aria-label'] = ariaLabel || `Download ${getLabel()}`;
-		} else if (ariaLabel || getLabel()) {
-			props['aria-label'] = ariaLabel || getLabel() || '';
-		}
-
-		return props;
-	};
-
-	const linkClass = twMerge(
-		'inline-block text-main w-max hover:underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all',
-		className
+	// Use provided label, link's label property, or fallback to slot content
+	let displayLabel = $derived(
+		label || (typeof link === 'object' && 'label' in link ? link.label : undefined)
 	);
 
-	const handleKeyDown = (event: KeyboardEvent) => {
-		if (event.key === 'Enter' || event.key === ' ') {
-			event.preventDefault();
-			(event.currentTarget as HTMLAnchorElement).click();
-		}
-	};
+	let attributes = $derived(getLinkAttributes());
 </script>
 
-<a class={linkClass} href={getHref()} {...getLinkProps()} onkeydown={handleKeyDown}>
-	{#if children}
-		{@render children()}
-	{:else if getLabel()}
-		<span class="inline-flex items-center gap-1">
-			{getLabel()}
-			{#if isExternal(link)}
-				<span class="sr-only">(opens in new tab)</span>
-				<ExternalIcon class="h-4 w-4" />
-			{:else if isFile(link)}
-				<span class="sr-only">(download file)</span>
-				<DownloadIcon class="h-4 w-4" />
-			{/if}
-		</span>
-	{/if}
-</a>
+{#if attributes}
+	<a class={allLinkClasses} {...attributes}>
+		{#if displayLabel}
+			{displayLabel}
+		{:else}
+			{@render children?.()}
+		{/if}
+	</a>
+{:else if displayLabel}
+	<span class={allLinkClasses}>{displayLabel}</span>
+{/if}
