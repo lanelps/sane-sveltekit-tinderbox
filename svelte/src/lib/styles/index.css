@@ -31,65 +31,56 @@
 	--breakpoint-xl-d: 108rem; /* 1728px */
 	--breakpoint-xxl-d: 120rem; /* 1920px */
 
+	/* Spacing */
+	--spacing-pm: 1rem;
+	--spacing-pd: 1.5rem;
+
+	--spacing-gm: 0.5rem;
+	--spacing-gd: 1rem;
+
 	/* Fonts */
 	--font-main: 'IBM Plex Sans', 'Helvetica Neue', ui-sans-serif, system-ui, sans-serif;
 
 	/* Trasnsitions */
+	--default-transition-timing-function: cubic-bezier(0.22, -0.01, 0.13, 0.99);
 	--default-transition-duration: 300ms;
-	--default-transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
 
 	/* Animations */
-	--animate-fade: appear var(--default-transition-duration)
-		var(--default-transition-timing-function) forwards;
-	--animate-fade-up: appear-up var(--default-transition-duration)
-		var(--default-transition-timing-function) forwards;
-	--animate-fade-down: appear-down var(--default-transition-duration)
+	--animate-fade-in: fadeIn var(--default-transition-duration)
 		var(--default-transition-timing-function) forwards;
 
-	@keyframes appear {
-		0% {
+	@keyframes fadeIn {
+		from {
 			opacity: 0;
 		}
-		100% {
+		to {
 			opacity: 1;
-		}
-	}
-
-	@keyframes appear-up {
-		0% {
-			opacity: 0;
-			transform: translateY(100%);
-		}
-		100% {
-			opacity: 1;
-			transform: translateY(0%);
-		}
-	}
-
-	@keyframes appear-down {
-		0% {
-			opacity: 0;
-			transform: translateY(-100%);
-		}
-		100% {
-			opacity: 1;
-			transform: translateY(0%);
 		}
 	}
 }
 
 @utility animate-delay-* {
-	animation-delay: calc(--value(integer) * 1ms);
+	animation-delay: calc(1ms * --value(integer));
 }
 
-@layer componets {
+@layer components {
+	.grid-main,
+	.grid-sub {
+		@apply gap-gm grid grid-cols-6;
+	}
+
 	.grid-main {
-		@apply grid w-full grid-cols-4 gap-6 px-6;
+		@apply px-pm;
 	}
 
 	@variant sm-t {
+		.grid-main,
+		.grid-sub {
+			@apply gap-gd grid grid-cols-12;
+		}
+
 		.grid-main {
-			@apply grid-cols-12;
+			@apply px-pd;
 		}
 	}
 }
