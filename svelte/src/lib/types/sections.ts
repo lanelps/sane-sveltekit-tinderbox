@@ -29,7 +29,7 @@ export interface ProjectsListSection extends BaseSection {
 
 export interface ProductsListSection extends BaseSection {
 	_type: 'productsList.section';
-	products: ProductsData<SanityImage>[];
+	products: ProductsData<string>[];
 }
 
 export type Section = ExampleSection | MediaSection | ProjectsListSection | ProductsListSection;
