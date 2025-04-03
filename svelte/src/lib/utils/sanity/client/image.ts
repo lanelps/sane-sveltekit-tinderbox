@@ -4,9 +4,10 @@ import { sanityClient } from '$lib/utils/sanity/client';
 import type {
 	UrlFor,
 	GetImageProps,
-	ProcessImage,
+	SanityProcessedImage,
 	GetImageDimensions,
-	GetRetinaSizes
+	GetRetinaSizes,
+	SanityImageData
 } from '$lib/types';
 
 const LARGEST_VIEWPORT = 1920;
@@ -85,7 +86,7 @@ export const getImageProps: GetImageProps = ({
 		return undefined;
 	}
 
-	const processImage: ProcessImage = (img, maxWidth) => {
+	const processImage = (img: SanityImageData, maxWidth: number): SanityProcessedImage => {
 		const { width: imageWidth, aspectRatio } = getImageDimensions(img);
 		const baseSizes = [maxWidth, ...(customWidthSteps || DEFAULT_FULL_WIDTH_STEPS)];
 		const retinaSizes = getRetinaSizes(baseSizes, imageWidth, maxWidth, minimumWidthStep);
@@ -93,7 +94,7 @@ export const getImageProps: GetImageProps = ({
 		return {
 			alt: img?.alt || '',
 			src: urlFor(img).width(maxWidth).url(),
-			srcset: retinaSizes.map((size) => `${urlFor(img).width(size).url()} ${size}w`).join(', '),
+			srcSet: retinaSizes.map((size) => `${urlFor(img).width(size).url()} ${size}w`).join(', '),
 			sizes: userMaxWidth
 				? `(max-width: ${userMaxWidth}px) 100vw, ${userMaxWidth}px`
 				: `(max-width: ${maxWidth}px) 100vw, ${maxWidth}px`,
