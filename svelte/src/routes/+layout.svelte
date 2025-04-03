@@ -30,7 +30,6 @@
 <svelte:window on:keydown={nav.close} />
 
 <Seo seo={page.data.seo} title={page.data.title} {site} />
-
 <Header links={site.navigation} />
 
 {#key page.data?.url}
