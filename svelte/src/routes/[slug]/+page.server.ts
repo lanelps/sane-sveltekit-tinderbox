@@ -13,7 +13,7 @@ export const load: PageServerLoad = async ({
 	// if (params.slug === 'favicon.ico') return;
 
 	try {
-		const initial = await fetchPage(loadQuery, params.slug);
+		const initial = await fetchPage(loadQuery, { slug: params.slug });
 
 		return { initial, seo: { title: initial?.data?.seo?.title || initial.data.title } };
 	} catch (err) {

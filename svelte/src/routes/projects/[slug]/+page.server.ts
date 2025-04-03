@@ -10,7 +10,7 @@ export const load: PageServerLoad = async ({
 	locals: { loadQuery }
 }): Promise<{ initial: QueryResponseInitial<ProjectData>; seo: { title: string } }> => {
 	try {
-		const initial = await fetchProject(loadQuery, params.slug);
+		const initial = await fetchProject(loadQuery, { slug: params.slug });
 
 		return { initial, seo: { title: initial?.data?.seo?.title || initial.data.title } };
 	} catch (err) {
