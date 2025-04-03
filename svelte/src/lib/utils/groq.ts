@@ -24,8 +24,14 @@ export const image = `
 `;
 
 export const video = `
-    format,
-    public_id
+     asset {
+        playbackId,
+        assetId,
+        filename,
+      },
+      poster {
+        ${image}
+      }
 `;
 
 export const media = `
@@ -107,6 +113,32 @@ export const sections = `
         _type == "media.section" => {
             media {
                 ${media}
+            },
+        },
+
+        // Projects List
+        _type == "projectsList.section" => {
+            projects[] -> {
+                _id,
+                title,
+                slug {
+                    current,
+                },
+                date,
+                thumbnail {
+                    ${media}
+                },
+            },
+        },
+
+        // Products List
+        _type == "productsList.section" => {
+            products[] -> {
+                _id,
+                "slug": store.slug,
+	            "productId": store.id,
+                "title": store.title,
+	            "image": store.previewImageUrl
             },
         },
     },
