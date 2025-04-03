@@ -20,6 +20,7 @@ import type {
 	SettingsData
 } from '$lib/types';
 import type { LoadQuery, QueryResponseInitial } from '@sanity/svelte-loader';
+import type { QueryParams } from '@sanity/client';
 
 export const fetchSite = async (loadQuery: LoadQuery): Promise<QueryResponseInitial<SiteData>> => {
 	const initialSite = await loadQuery<SiteData>(siteQuery);
@@ -45,18 +46,18 @@ export const fetchHomePage = async (
 
 export const fetchPage = async (
 	loadQuery: LoadQuery,
-	slug: string
+	params?: QueryParams
 ): Promise<QueryResponseInitial<PageData>> => {
-	const initialPage = await loadQuery<PageData>(pageQuery, { slug });
+	const initialPage = await loadQuery<PageData>(pageQuery, params);
 	if (!initialPage) throw new Error('Error fetching page data');
 	return initialPage;
 };
 
 export const fetchProject = async (
 	loadQuery: LoadQuery,
-	slug: string
+	params?: QueryParams
 ): Promise<QueryResponseInitial<ProjectData>> => {
-	const initialProject = await loadQuery<ProjectData>(projectQuery, { slug });
+	const initialProject = await loadQuery<ProjectData>(projectQuery, params);
 	if (!initialProject) throw new Error('Error fetching project data');
 	return initialProject;
 };
@@ -71,9 +72,9 @@ export const fetchProjects = async (
 
 export const fetchProduct = async (
 	loadQuery: LoadQuery,
-	slug: string
+	params?: QueryParams
 ): Promise<QueryResponseInitial<ProductData>> => {
-	const initialProduct = await loadQuery<ProductData>(productQuery, { slug });
+	const initialProduct = await loadQuery<ProductData>(productQuery, params);
 	if (!initialProduct) throw new Error('Error fetching product data');
 	return initialProduct;
 };

@@ -5,6 +5,7 @@
 
 	import { nav } from '$lib/stores/nav.svelte';
 
+	import Cart from '$lib/components/Cart.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Seo from '$lib/components/Seo.svelte';
 	import LiveMode from '$lib/components/LiveMode.svelte';
@@ -31,6 +32,7 @@
 
 <Seo seo={page.data.seo} title={page.data.title} {site} />
 <Header links={site.navigation} />
+<Cart />
 
 {#key page.data?.url}
 	<main class="grid-main relative h-full pt-20">

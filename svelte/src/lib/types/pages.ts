@@ -54,9 +54,8 @@ export interface ProductsData<T = string> {
 	image: T;
 }
 
-export type ProductData = {
-	details: ProductDetails;
+export interface ProductData extends ProductDetails {
 	variants: ProductVariant[];
-};
+}
 
 export type PageTypes = HomePageData | PageData | ProjectData;

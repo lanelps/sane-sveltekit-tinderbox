@@ -3,6 +3,8 @@
 	import { twMerge } from 'tailwind-merge';
 
 	import { nav } from '$lib/stores/nav.svelte';
+	import { cart } from '$lib/stores/cart.svelte';
+
 	import Link from '$lib/components/Link.svelte';
 
 	import type { Links } from '$lib/types';
@@ -18,21 +20,24 @@
 	});
 </script>
 
-<header class="font-main grid-main fixed top-0 right-0 left-0 z-50 p-6">
-	<Link link="/" class="col-span-3">
+<header class="p-pm sm-t:p-pd flex items-center justify-between">
+	<Link link="/">
 		<h1>Sane SvelteKit Tinderbox 🔥</h1>
 	</Link>
 
-	<nav class="sm-t:block col-span-full col-start-4 hidden">
+	<nav class="sm-t:flex gap-x-gm sm-t:gap-x-gd hidden">
 		<ul class="flex w-full gap-x-8">
 			{#each links as link (link._key)}
 				<li>
 					<Link {link} />
 				</li>
 			{/each}
+
+			<button onclick={cart.toggle}>Cart ({cart.items.length})</button>
 		</ul>
 	</nav>
 
+	<!-- Mobile Menu -->
 	<nav
 		class={twMerge(
 			'sm-t:hidden pointer-events-none fixed inset-0 z-40 h-full w-full bg-white p-6 opacity-0 transition-opacity',
@@ -46,6 +51,8 @@
 					<Link {link} />
 				</li>
 			{/each}
+
+			<button onclick={cart.toggle}>Cart ({cart.items.length})</button>
 		</ul>
 	</nav>
 

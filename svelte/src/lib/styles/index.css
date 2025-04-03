@@ -84,3 +84,8 @@
 		}
 	}
 }
+
+a,
+button {
+	@apply cursor-pointer;
+}
