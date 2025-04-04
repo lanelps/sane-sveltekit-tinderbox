@@ -87,7 +87,7 @@
 			<button
 				onclick={handleCheckout}
 				disabled={cart.isLoading || !cart.cartId}
-				class="mt-2 w-full bg-black p-2 text-white disabled:bg-gray-400"
+				class="mt-2 w-full bg-black p-2 text-white"
 			>
 				{cart.isLoading ? 'Processing...' : 'Proceed to Checkout'}
 			</button>
