@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { cart } from '$lib/stores/cart.svelte';
-	import { addToCart as shopifyAddToCart } from '$lib/utils/shopify';
 	import type { CartItem, ProductVariant } from '$lib/types';
 
 	const { title, variants = null } = $props<{
@@ -10,12 +9,11 @@
 
 	let selectedVariant = $state<ProductVariant | null>(variants?.[0] || null);
 	let quantity = $state(1);
-	let isLoading = $state(false);
 	let error = $state<string | null>(null);
 
 	// Helper function to create cart item data
-	const createCartItemData = (variant: ProductVariant, lineItemId = ''): CartItem => ({
-		id: lineItemId,
+	const createCartItemData = (variant: ProductVariant): CartItem => ({
+		id: '', // Will be set by cart store if using Shopify
 		variantId: variant.store.gid,
 		quantity,
 		title: title,
@@ -27,40 +25,15 @@
 	const addToCart = async () => {
 		if (!selectedVariant) return;
 
-		// TypeScript type guard - create a non-null variable
-		const variant = selectedVariant;
-
 		error = null;
-		isLoading = true;
 
 		try {
-			// If we have a Shopify cartId, add to Shopify first
-			if (cart.cartId) {
-				const response = await shopifyAddToCart({
-					cartId: cart.cartId,
-					variantId: variant.store.gid,
-					quantity
-				});
-
-				// Extract the line item ID from the response
-				const lineItem = response.cart.lines.edges.find(
-					({ node }) => node.merchandise.id === variant.store.gid
-				);
-
-				const lineItemId = lineItem ? lineItem.node.id : '';
-				cart.addItem(createCartItemData(variant, lineItemId));
-			} else {
-				// No Shopify cart yet, just add to local store
-				cart.addItem(createCartItemData(variant));
-			}
-
+			await cart.addItem(createCartItemData(selectedVariant));
 			// Reset quantity after adding
 			quantity = 1;
 		} catch (err) {
 			console.error('Failed to add item to cart:', err);
 			error = 'Failed to add item to cart. Please try again.';
-		} finally {
-			isLoading = false;
 		}
 	};
 
@@ -69,7 +42,7 @@
 </script>
 
 <div>
-	<select bind:value={selectedVariant} disabled={isLoading}>
+	<select bind:value={selectedVariant} disabled={cart.isLoading}>
 		{#each variants as variant}
 			<option value={variant}>
 				{variant.store.title} - ${variant.store.price}
@@ -79,13 +52,16 @@
 	</select>
 
 	<div>
-		<button onclick={decrementQuantity} disabled={isLoading}>-</button>
-		<input type="number" bind:value={quantity} min="1" disabled={isLoading} />
-		<button onclick={incrementQuantity} disabled={isLoading}>+</button>
+		<button onclick={decrementQuantity} disabled={cart.isLoading}>-</button>
+		<input type="number" bind:value={quantity} min="1" disabled={cart.isLoading} />
+		<button onclick={incrementQuantity} disabled={cart.isLoading}>+</button>
 	</div>
 
-	<button onclick={addToCart} disabled={!selectedVariant?.store.inventory.isAvailable || isLoading}>
-		{isLoading ? 'Adding...' : 'Add to Cart'}
+	<button
+		onclick={addToCart}
+		disabled={!selectedVariant?.store.inventory.isAvailable || cart.isLoading}
+	>
+		{cart.isLoading ? 'Adding...' : 'Add to Cart'}
 	</button>
 
 	{#if error}

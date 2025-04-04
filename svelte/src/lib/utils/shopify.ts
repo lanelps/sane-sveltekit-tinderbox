@@ -1,15 +1,97 @@
-import type { ShopifyCart, ShopifyCartResponse } from '$lib/types/cart';
+import type {
+	ShopifyCart,
+	ShopifyCartResponse,
+	ShopifyCartOperationInput,
+	ShopifyAddToCartInput,
+	ShopifyUpdateCartInput,
+	ShopifyRemoveLineItemInput,
+	ShopifyRemoveLineItemsInput,
+	ShopifyCreateCartResponse,
+	ShopifyCheckoutResponse,
+	ShopifyCartLineItem,
+	ShopifyMetafield,
+	ShopifyProductImage,
+	ShopifyProductOption,
+	ShopifyProductVariant,
+	ShopifyProduct
+} from '$lib/types/cart';
 import {
 	PUBLIC_ENABLE_SHOPIFY,
 	PUBLIC_SHOPIFY_STOREFRONT_TOKEN,
 	PUBLIC_SHOPIFY_STORE
 } from '$env/static/public';
 
+// Custom error classes for better error handling
+export class ShopifyError extends Error {
+	public code?: string;
+	public statusCode?: number;
+	public originalError?: Error | unknown;
+
+	constructor(
+		message: string,
+		options: { code?: string; statusCode?: number; originalError?: unknown } = {}
+	) {
+		super(message);
+		this.name = 'ShopifyError';
+		this.code = options.code;
+		this.statusCode = options.statusCode;
+		this.originalError = options.originalError;
+	}
+}
+
+export class ShopifyCartError extends ShopifyError {
+	constructor(
+		message: string,
+		options: { code?: string; statusCode?: number; originalError?: unknown } = {}
+	) {
+		super(message, options);
+		this.name = 'ShopifyCartError';
+	}
+}
+
+export class ShopifyProductError extends ShopifyError {
+	constructor(
+		message: string,
+		options: { code?: string; statusCode?: number; originalError?: unknown } = {}
+	) {
+		super(message, options);
+		this.name = 'ShopifyProductError';
+	}
+}
+
+// Standard error handler
+const handleShopifyError = <T>(error: unknown, operation: string): T => {
+	console.error(`Shopify Error in ${operation}:`, error);
+
+	if (error instanceof ShopifyError) {
+		throw error;
+	}
+
+	if (error instanceof Error) {
+		if (error.message.includes('cart')) {
+			throw new ShopifyCartError(`Failed during ${operation}: ${error.message}`, {
+				originalError: error
+			});
+		} else if (error.message.includes('product')) {
+			throw new ShopifyProductError(`Failed during ${operation}: ${error.message}`, {
+				originalError: error
+			});
+		} else {
+			throw new ShopifyError(`Failed during ${operation}: ${error.message}`, {
+				originalError: error
+			});
+		}
+	}
+
+	// For unknown errors
+	throw new ShopifyError(`Unknown error occurred during ${operation}`, { originalError: error });
+};
+
 export const shopifyConfig = {
 	isEnabled: PUBLIC_ENABLE_SHOPIFY === 'true',
 	storefrontToken: PUBLIC_SHOPIFY_STOREFRONT_TOKEN,
 	store: PUBLIC_SHOPIFY_STORE,
-	apiVersion: '2025-01' // Make sure this matches your dwesired API version
+	apiVersion: '2025-01' // Make sure this matches your desired API version
 };
 
 // Constants
@@ -29,24 +111,25 @@ const extractCartId = (fullCartId: string): string => {
 };
 
 // Initialize cart, checking storage and creating new cart if needed
-export const initializeCart = async (): Promise<{ cartId: string }> => {
+export const initializeCart = async (): Promise<ShopifyCreateCartResponse> => {
 	try {
 		if (typeof window === 'undefined') {
-			throw new Error('Cannot initialize cart on server-side');
+			throw new ShopifyCartError('Cannot initialize cart on server-side', {
+				code: 'SERVER_SIDE_CART_INIT'
+			});
 		}
 
 		// Check local storage for existing cart ID
 		const storedCartId = localStorage.getItem(CART_ID_KEY);
 
 		if (storedCartId) {
-			console.log('Found existing cart ID in storage:', storedCartId);
 			// Verify the cart still exists
 			try {
 				const fullCartId = ensureFullCartId(storedCartId);
 				await getCart({ cartId: fullCartId });
 				return { cartId: fullCartId };
 			} catch (error) {
-				console.log('Stored cart no longer valid, creating new cart');
+				console.error(error, 'Stored cart no longer valid, creating new cart');
 				// Cart not found or invalid, create new one
 				return await createNewCart();
 			}
@@ -55,27 +138,31 @@ export const initializeCart = async (): Promise<{ cartId: string }> => {
 		// No cart ID in storage, create new cart
 		return await createNewCart();
 	} catch (error) {
-		console.error('Failed to initialize cart:', error);
-		throw error;
+		return handleShopifyError<ShopifyCreateCartResponse>(error, 'initializeCart');
 	}
 };
 
 // Helper function to create a new cart and store its ID
-export const createNewCart = async (): Promise<{ cartId: string }> => {
-	const newCart = await createCart();
-	const fullCartId = ensureFullCartId(newCart.id);
+export const createNewCart = async (): Promise<ShopifyCreateCartResponse> => {
+	try {
+		const newCart = await createCart();
+		const fullCartId = ensureFullCartId(newCart.id);
 
-	// Store the cart ID in local storage
-	if (typeof window !== 'undefined') {
-		localStorage.setItem(CART_ID_KEY, extractCartId(fullCartId));
+		// Store the cart ID in local storage
+		if (typeof window !== 'undefined') {
+			localStorage.setItem(CART_ID_KEY, extractCartId(fullCartId));
+		}
+
+		return { cartId: fullCartId, cart: newCart };
+	} catch (error) {
+		return handleShopifyError<ShopifyCreateCartResponse>(error, 'createNewCart');
 	}
-
-	return { cartId: fullCartId };
 };
 
+// Update the storefrontClient.fetch method to properly handle JSON responses
 export const storefrontClient = {
 	endpoint: `https://${shopifyConfig.store}.myshopify.com/api/${shopifyConfig.apiVersion}/graphql.json`,
-	fetch: async <T>(query: string, variables = {}, caller = 'Unknown') => {
+	fetch: async <T>(query: string, variables = {}, caller = 'Unknown'): Promise<T> => {
 		try {
 			const response = await fetch(storefrontClient.endpoint, {
 				method: 'POST',
@@ -87,26 +174,35 @@ export const storefrontClient = {
 			});
 
 			if (!response.ok) {
-				throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+				throw new ShopifyError(`HTTP Error: ${response.status} ${response.statusText}`, {
+					statusCode: response.status,
+					code: 'HTTP_ERROR'
+				});
 			}
 
-			const { data, errors } = await response.json();
+			const responseData: { data?: T; errors?: Array<{ message: string }> } = await response.json();
 
-			if (errors && errors.length > 0) {
-				throw new Error(errors.map((e: any) => e.message).join(', '));
+			if (responseData.errors && responseData.errors.length > 0) {
+				const errorMessages = responseData.errors.map((e) => e.message).join(', ');
+				throw new ShopifyError(errorMessages, { code: 'GRAPHQL_ERROR' });
 			}
 
-			return data as T;
+			if (!responseData.data) {
+				throw new ShopifyError('Empty response from Shopify API', { code: 'EMPTY_API_RESPONSE' });
+			}
+
+			return responseData.data;
 		} catch (error) {
-			console.error(`Shopify Storefront Error in ${caller}:`, error);
-			throw error;
+			if (error instanceof ShopifyError) {
+				throw error;
+			}
+			return handleShopifyError<T>(error, caller);
 		}
 	}
 };
 
 // Create a new cart
-export const createCart = async () => {
-	console.log('Creating new cart');
+export const createCart = async (): Promise<ShopifyCart> => {
 	const query = `
     mutation {
         cartCreate {
@@ -147,17 +243,33 @@ export const createCart = async () => {
     }`;
 
 	try {
-		const response = await storefrontClient.fetch<{
-			cartCreate: ShopifyCartResponse<ShopifyCart>;
-		}>(query, {}, 'createCart');
-		console.log('Cart creation raw response:', response);
+		// The response structure needs to be properly typed
+		type CreateCartResponse = {
+			cartCreate: {
+				cart: ShopifyCart & {
+					lines: {
+						edges: Array<{
+							node: ShopifyCartLineItem;
+						}>;
+					};
+				};
+				userErrors: Array<{ field: string; message: string }>;
+			};
+		};
+
+		const response = await storefrontClient.fetch<CreateCartResponse>(query, {}, 'createCart');
 
 		if (response.cartCreate.userErrors?.length > 0) {
-			throw new Error(response.cartCreate.userErrors[0].message);
+			const errorMessages = response.cartCreate.userErrors.map((err) => err.message).join(', ');
+			throw new ShopifyCartError(`Cart creation failed: ${errorMessages}`, {
+				code: 'CART_CREATE_ERROR'
+			});
 		}
 
 		if (!response.cartCreate?.cart) {
-			throw new Error('Invalid cart creation response from Shopify');
+			throw new ShopifyCartError('Invalid cart creation response from Shopify', {
+				code: 'INVALID_CART_RESPONSE'
+			});
 		}
 
 		const cart = response.cartCreate.cart;
@@ -165,21 +277,20 @@ export const createCart = async () => {
 			...cart,
 			id: cart.id.replace('gid://shopify/Cart/', '')
 		};
-		console.log('Created cart with clean ID:', cleanCart.id);
 		return cleanCart;
 	} catch (error) {
-		console.error('Failed to create cart:', error);
-		throw error;
+		return handleShopifyError<ShopifyCart>(error, 'createCart');
 	}
 };
 
 // Get an existing cart
-export const getCart = async ({ cartId }: { cartId: string }) => {
+export const getCart = async ({
+	cartId
+}: ShopifyCartOperationInput): Promise<{ cart: ShopifyCart }> => {
 	if (!cartId) {
-		throw new Error('Cart ID is required');
+		throw new ShopifyCartError('Cart ID is required', { code: 'MISSING_CART_ID' });
 	}
 
-	console.log('Getting cart with cart ID:', cartId);
 	const formattedCartId = ensureFullCartId(cartId);
 
 	const query = `
@@ -217,19 +328,19 @@ export const getCart = async ({ cartId }: { cartId: string }) => {
     `;
 
 	try {
-		const data = await storefrontClient.fetch<{ cart: ShopifyCart | null }>(
+		type GetCartResponse = { cart: ShopifyCart | null };
+		const data = await storefrontClient.fetch<GetCartResponse>(
 			query,
 			{ cartId: formattedCartId },
 			'getCart'
 		);
 		if (!data.cart) {
-			throw new Error('Cart not found');
+			throw new ShopifyCartError(`Cart not found with ID: ${cartId}`, { code: 'CART_NOT_FOUND' });
 		}
 
-		return data;
+		return { cart: data.cart };
 	} catch (error) {
-		console.error('Failed to fetch cart:', error);
-		throw new Error('Cart not found');
+		return handleShopifyError<{ cart: ShopifyCart }>(error, 'getCart');
 	}
 };
 
@@ -238,53 +349,57 @@ export const addToCart = async ({
 	cartId,
 	variantId,
 	quantity
-}: {
-	cartId: string;
-	variantId: string;
-	quantity: number;
-}) => {
-	const formattedCartId = ensureFullCartId(cartId);
-	const query = `
-    mutation cartLinesAdd($cartId: ID!, $lines: [CartLineInput!]!) {
-        cartLinesAdd(cartId: $cartId, lines: $lines) {
-            cart {
-                id
-                checkoutUrl
-                totalQuantity
-                lines(first: 100) {
-                    edges {
-                        node {
-                            id
-                            quantity
-                            merchandise {
-                                ... on ProductVariant {
-                                    id
-                                    title
-                                    priceV2 {
-                                        amount
-                                        currencyCode
-                                    }
-                                    image {
-                                        originalSrc
-                                    }
-                                    product {
-                                        title
-                                        handle
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            userErrors {
-                field
-                message
-            }
-        }
-    }`;
-
+}: ShopifyAddToCartInput): Promise<ShopifyCartResponse<ShopifyCart>> => {
 	try {
+		if (!cartId) {
+			throw new ShopifyCartError('Cart ID is required', { code: 'MISSING_CART_ID' });
+		}
+
+		if (!variantId) {
+			throw new ShopifyCartError('Variant ID is required', { code: 'MISSING_VARIANT_ID' });
+		}
+
+		const formattedCartId = ensureFullCartId(cartId);
+		const query = `
+		mutation cartLinesAdd($cartId: ID!, $lines: [CartLineInput!]!) {
+			cartLinesAdd(cartId: $cartId, lines: $lines) {
+				cart {
+					id
+					checkoutUrl
+					totalQuantity
+					lines(first: 100) {
+						edges {
+							node {
+								id
+								quantity
+								merchandise {
+									... on ProductVariant {
+										id
+										title
+										priceV2 {
+											amount
+											currencyCode
+										}
+										image {
+											originalSrc
+										}
+										product {
+											title
+											handle
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+				userErrors {
+					field
+					message
+				}
+			}
+		}`;
+
 		const data = await storefrontClient.fetch<{
 			cartLinesAdd: ShopifyCartResponse<ShopifyCart>;
 		}>(
@@ -302,19 +417,21 @@ export const addToCart = async ({
 		);
 
 		if (data.cartLinesAdd.userErrors?.length > 0) {
-			throw new Error(data.cartLinesAdd.userErrors[0].message);
+			const errorMessages = data.cartLinesAdd.userErrors.map((err) => err.message).join(', ');
+			throw new ShopifyCartError(`Add to cart failed: ${errorMessages}`, {
+				code: 'ADD_TO_CART_ERROR'
+			});
 		}
 
 		if (!data.cartLinesAdd?.cart) {
-			throw new Error('Failed to add item to cart');
+			throw new ShopifyCartError('Failed to add item to cart - empty response', {
+				code: 'EMPTY_CART_RESPONSE'
+			});
 		}
 
-		return {
-			cart: data.cartLinesAdd.cart
-		};
+		return data.cartLinesAdd;
 	} catch (error) {
-		console.error('Failed to add item to cart:', error);
-		throw error;
+		return handleShopifyError<ShopifyCartResponse<ShopifyCart>>(error, 'addToCart');
 	}
 };
 
@@ -324,56 +441,58 @@ export const updateCart = async ({
 	itemId,
 	variantId,
 	quantity
-}: {
-	cartId: string;
-	itemId: string;
-	variantId: string;
-	quantity: number;
-}) => {
-	const formattedCartId = ensureFullCartId(cartId);
-	console.log('Update cart input:', { cartId, itemId, variantId, quantity });
-
-	const query = `
-    mutation cartLinesUpdate($cartId: ID!, $lines: [CartLineUpdateInput!]!) {
-        cartLinesUpdate(cartId: $cartId, lines: $lines) {
-            cart {
-                id
-                checkoutUrl
-                totalQuantity
-                lines(first: 100) {
-                    edges {
-                        node {
-                            id
-                            quantity
-                            merchandise {
-                                ... on ProductVariant {
-                                    id
-                                    title
-                                    priceV2 {
-                                        amount
-                                        currencyCode
-                                    }
-                                    image {
-                                        originalSrc
-                                    }
-                                    product {
-                                        title
-                                        handle
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            userErrors {
-                field
-                message
-            }
-        }
-    }`;
-
+}: ShopifyUpdateCartInput): Promise<ShopifyCartResponse<ShopifyCart>> => {
 	try {
+		if (!cartId) {
+			throw new ShopifyCartError('Cart ID is required', { code: 'MISSING_CART_ID' });
+		}
+
+		if (!itemId) {
+			throw new ShopifyCartError('Item ID is required', { code: 'MISSING_ITEM_ID' });
+		}
+
+		const formattedCartId = ensureFullCartId(cartId);
+
+		const query = `
+		mutation cartLinesUpdate($cartId: ID!, $lines: [CartLineUpdateInput!]!) {
+			cartLinesUpdate(cartId: $cartId, lines: $lines) {
+				cart {
+					id
+					checkoutUrl
+					totalQuantity
+					lines(first: 100) {
+						edges {
+							node {
+								id
+								quantity
+								merchandise {
+									... on ProductVariant {
+										id
+										title
+										priceV2 {
+											amount
+											currencyCode
+										}
+										image {
+											originalSrc
+										}
+										product {
+											title
+											handle
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+				userErrors {
+					field
+					message
+				}
+			}
+		}`;
+
 		const data = await storefrontClient.fetch<{
 			cartLinesUpdate: ShopifyCartResponse<ShopifyCart>;
 		}>(
@@ -392,66 +511,79 @@ export const updateCart = async ({
 		);
 
 		if (data.cartLinesUpdate.userErrors?.length > 0) {
-			throw new Error(data.cartLinesUpdate.userErrors[0].message);
+			const errorMessages = data.cartLinesUpdate.userErrors.map((err) => err.message).join(', ');
+			throw new ShopifyCartError(`Update cart failed: ${errorMessages}`, {
+				code: 'UPDATE_CART_ERROR'
+			});
 		}
 
 		if (!data.cartLinesUpdate?.cart) {
-			throw new Error('Failed to update cart');
+			throw new ShopifyCartError('Failed to update cart - empty response', {
+				code: 'EMPTY_CART_RESPONSE'
+			});
 		}
 
-		return {
-			cart: data.cartLinesUpdate.cart
-		};
+		return data.cartLinesUpdate;
 	} catch (error) {
-		console.error('Failed to update cart:', error);
-		throw error;
+		return handleShopifyError<ShopifyCartResponse<ShopifyCart>>(error, 'updateCart');
 	}
 };
 
 // Remove item from cart
-export const removeLineItem = async ({ cartId, itemId }: { cartId: string; itemId: string }) => {
-	const formattedCartId = ensureFullCartId(cartId);
-	const query = `
-    mutation cartLinesRemove($cartId: ID!, $lineIds: [ID!]!) {
-        cartLinesRemove(cartId: $cartId, lineIds: $lineIds ) {
-            cart {
-                id
-                checkoutUrl
-                totalQuantity
-                lines(first: 100) {
-                    edges {
-                        node {
-                            id
-                            quantity
-                            merchandise {
-                                ... on ProductVariant {
-                                    id
-                                    title
-                                    priceV2 {
-                                        amount
-                                        currencyCode
-                                    }
-                                    image {
-                                        originalSrc
-                                    }
-                                    product {
-                                        title
-                                        handle
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            userErrors {
-                field
-                message
-            }
-        }
-    }`;
-
+export const removeLineItem = async ({
+	cartId,
+	itemId
+}: ShopifyRemoveLineItemInput): Promise<ShopifyCartResponse<ShopifyCart>> => {
 	try {
+		if (!cartId) {
+			throw new ShopifyCartError('Cart ID is required', { code: 'MISSING_CART_ID' });
+		}
+
+		if (!itemId) {
+			throw new ShopifyCartError('Item ID is required', { code: 'MISSING_ITEM_ID' });
+		}
+
+		const formattedCartId = ensureFullCartId(cartId);
+		const query = `
+		mutation cartLinesRemove($cartId: ID!, $lineIds: [ID!]!) {
+			cartLinesRemove(cartId: $cartId, lineIds: $lineIds ) {
+				cart {
+					id
+					checkoutUrl
+					totalQuantity
+					lines(first: 100) {
+						edges {
+							node {
+								id
+								quantity
+								merchandise {
+									... on ProductVariant {
+										id
+										title
+										priceV2 {
+											amount
+											currencyCode
+										}
+										image {
+											originalSrc
+										}
+										product {
+											title
+											handle
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+				userErrors {
+					field
+					message
+				}
+			}
+		}`;
+
 		const data = await storefrontClient.fetch<{
 			cartLinesRemove: ShopifyCartResponse<ShopifyCart>;
 		}>(
@@ -464,19 +596,21 @@ export const removeLineItem = async ({ cartId, itemId }: { cartId: string; itemI
 		);
 
 		if (data.cartLinesRemove.userErrors?.length > 0) {
-			throw new Error(data.cartLinesRemove.userErrors[0].message);
+			const errorMessages = data.cartLinesRemove.userErrors.map((err) => err.message).join(', ');
+			throw new ShopifyCartError(`Remove line item failed: ${errorMessages}`, {
+				code: 'REMOVE_ITEM_ERROR'
+			});
 		}
 
 		if (!data.cartLinesRemove?.cart) {
-			throw new Error('Failed to remove item from cart');
+			throw new ShopifyCartError('Failed to remove item from cart - empty response', {
+				code: 'EMPTY_CART_RESPONSE'
+			});
 		}
 
-		return {
-			cart: data.cartLinesRemove.cart
-		};
+		return data.cartLinesRemove;
 	} catch (error) {
-		console.error('Failed to remove line item:', error);
-		throw error;
+		return handleShopifyError<ShopifyCartResponse<ShopifyCart>>(error, 'removeLineItem');
 	}
 };
 
@@ -484,54 +618,67 @@ export const removeLineItem = async ({ cartId, itemId }: { cartId: string; itemI
 export const removeLineItems = async ({
 	cartId,
 	itemIds
-}: {
-	cartId: string;
-	itemIds: string[];
-}) => {
-	if (!itemIds.length) return { cart: null };
-
-	const formattedCartId = ensureFullCartId(cartId);
-	const query = `
-    mutation cartLinesRemove($cartId: ID!, $lineIds: [ID!]!) {
-        cartLinesRemove(cartId: $cartId, lineIds: $lineIds ) {
-            cart {
-                id
-                checkoutUrl
-                totalQuantity
-                lines(first: 100) {
-                    edges {
-                        node {
-                            id
-                            quantity
-                            merchandise {
-                                ... on ProductVariant {
-                                    id
-                                    title
-                                    priceV2 {
-                                        amount
-                                        currencyCode
-                                    }
-                                    image {
-                                        originalSrc
-                                    }
-                                    product {
-                                        title
-                                        handle
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            userErrors {
-                field
-                message
-            }
-        }
-    }`;
-
+}: ShopifyRemoveLineItemsInput): Promise<ShopifyCartResponse<ShopifyCart>> => {
 	try {
+		if (!cartId) {
+			throw new ShopifyCartError('Cart ID is required', { code: 'MISSING_CART_ID' });
+		}
+
+		if (!itemIds || !Array.isArray(itemIds)) {
+			throw new ShopifyCartError('Item IDs array is required', { code: 'MISSING_ITEM_IDS' });
+		}
+
+		// Define a default empty response with the correct type
+		if (!itemIds.length) {
+			// Get existing cart to return it unchanged since we're not removing any items
+			const existingCartResponse = await getCart({ cartId });
+			return {
+				cart: existingCartResponse.cart,
+				userErrors: []
+			};
+		}
+
+		const formattedCartId = ensureFullCartId(cartId);
+		const query = `
+		mutation cartLinesRemove($cartId: ID!, $lineIds: [ID!]!) {
+			cartLinesRemove(cartId: $cartId, lineIds: $lineIds ) {
+				cart {
+					id
+					checkoutUrl
+					totalQuantity
+					lines(first: 100) {
+						edges {
+							node {
+								id
+								quantity
+								merchandise {
+									... on ProductVariant {
+										id
+										title
+										priceV2 {
+											amount
+											currencyCode
+										}
+										image {
+											originalSrc
+										}
+										product {
+											title
+											handle
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+				userErrors {
+					field
+					message
+				}
+			}
+		}`;
+
 		const data = await storefrontClient.fetch<{
 			cartLinesRemove: ShopifyCartResponse<ShopifyCart>;
 		}>(
@@ -544,148 +691,135 @@ export const removeLineItems = async ({
 		);
 
 		if (data.cartLinesRemove.userErrors?.length > 0) {
-			throw new Error(data.cartLinesRemove.userErrors[0].message);
+			const errorMessages = data.cartLinesRemove.userErrors.map((err) => err.message).join(', ');
+			throw new ShopifyCartError(`Remove line items failed: ${errorMessages}`, {
+				code: 'REMOVE_ITEMS_ERROR'
+			});
 		}
 
 		if (!data.cartLinesRemove?.cart) {
-			throw new Error('Failed to remove items from cart');
+			throw new ShopifyCartError('Failed to remove items from cart - empty response', {
+				code: 'EMPTY_CART_RESPONSE'
+			});
 		}
 
-		return {
-			cart: data.cartLinesRemove.cart
-		};
+		return data.cartLinesRemove;
 	} catch (error) {
-		console.error('Failed to remove line items:', error);
-		throw error;
+		return handleShopifyError<ShopifyCartResponse<ShopifyCart>>(error, 'removeLineItems');
 	}
 };
 
-// Fetch all products
-export const fetchAllProducts = async () => {
+// Fetch product by handle
+export const fetchProduct = async (handle: string): Promise<ShopifyProduct> => {
 	const query = `
-    {
-        products(first: 100) {
-            edges {
-                node {
-                    id
-                    title
-                    handle
-                    description
-                    updatedAt
-                    images(first: 1) {
-                        edges {
-                            node {
-                                originalSrc
-                            }
-                        }
-                    }
-                    variants(first: 1) {
-                        edges {
-                            node {
-                                priceV2 {
-                                    amount
-                                    currencyCode
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-  `;
+	query getProductByHandle($handle: String!) {
+		productByHandle(handle: $handle) {
+			id
+			handle
+			title
+			description
+			descriptionHtml
+			availableForSale
+			material: metafield(namespace: "custom", key: "material") {
+				value
+			}
+			shipping: metafield(namespace: "custom", key: "shipping") {
+				value
+			}
+			images(first: 100) {
+				edges {
+					node {
+						originalSrc
+					}
+				}
+			}
+			options {
+				id
+				name
+				values
+			}
+			variants(first: 100) {
+				edges {
+					node {
+						id
+						sku
+						title
+						priceV2 {
+							amount
+							currencyCode
+						}
+						image {
+							originalSrc
+						}
+						availableForSale
+						currentlyNotInStock
+						quantityAvailable
+					}
+				}
+			}
+		}
+	}`;
 
-	try {
-		const result = await storefrontClient.fetch<{ products: { edges: any[] } }>(
-			query,
-			{},
-			'fetchAllProducts'
-		);
-		return result.products.edges.map(({ node }) => ({
-			...node,
-			images: node.images.edges.map(({ node }: any) => node),
-			variants: node.variants.edges.map(({ node }: any) => node)
-		}));
-	} catch (error) {
-		console.error('Failed to fetch all products:', error);
-		throw error;
+	interface ProductByHandleResponse {
+		productByHandle: {
+			id: string;
+			handle: string;
+			title: string;
+			description: string;
+			descriptionHtml: string;
+			availableForSale: boolean;
+			material: ShopifyMetafield | null;
+			shipping: ShopifyMetafield | null;
+			images: {
+				edges: Array<{
+					node: ShopifyProductImage;
+				}>;
+			};
+			options: ShopifyProductOption[];
+			variants: {
+				edges: Array<{
+					node: ShopifyProductVariant;
+				}>;
+			};
+		} | null;
 	}
-};
-
-// Fetch a single product by handle
-export const fetchProduct = async (handle: string) => {
-	const query = `
-    query getProduct($handle: String!) {
-        productByHandle(handle: $handle) {
-            id
-            title
-            handle
-            description
-            availableForSale
-            material: metafield(namespace: "custom", key: "material") {
-                value
-            }
-            shipping: metafield(namespace: "custom", key: "shipping") {
-                value
-            }
-            images(first: 100) {
-                edges {
-                    node {
-                        originalSrc
-                    }
-                }
-            }
-            options {
-                id
-                name
-                values
-            }
-            variants(first: 100) {
-                edges {
-                    node {
-                        id
-                        sku
-                        title
-                        priceV2 {
-                            amount
-                            currencyCode
-                        }
-                        image {
-                            originalSrc
-                        }
-                        availableForSale
-                        currentlyNotInStock
-                        quantityAvailable
-                    }
-                }
-            }
-        }
-    }
-    `;
 
 	try {
-		const result = await storefrontClient.fetch<{ productByHandle: any }>(
+		const result = await storefrontClient.fetch<ProductByHandleResponse>(
 			query,
 			{ handle },
 			`fetchProduct(${handle})`
 		);
+
 		if (!result.productByHandle) {
-			throw new Error(`Product with handle '${handle}' not found`);
+			throw new ShopifyProductError(`Product with handle '${handle}' not found`, {
+				code: 'PRODUCT_NOT_FOUND'
+			});
 		}
 
-		return {
+		// Transform the response structure to match our ShopifyProduct type
+		const product: ShopifyProduct = {
 			...result.productByHandle,
-			images: result.productByHandle.images.edges.map(({ node }: any) => node),
-			variants: result.productByHandle.variants.edges.map(({ node }: any) => node)
+			images: result.productByHandle.images.edges.map(({ node }) => node),
+			variants: result.productByHandle.variants.edges.map(({ node }) => node),
+			material: result.productByHandle.material || undefined,
+			shipping: result.productByHandle.shipping || undefined
 		};
+
+		return product;
 	} catch (error) {
-		console.error(`Failed to fetch product ${handle}:`, error);
-		throw error;
+		return handleShopifyError<ShopifyProduct>(error, `fetchProduct(${handle})`);
 	}
 };
 
 // Get checkout URL for a cart
-export const getCheckoutURL = async ({ cartId }: { cartId: string }) => {
+export const getCheckoutURL = async ({
+	cartId
+}: ShopifyCartOperationInput): Promise<ShopifyCheckoutResponse> => {
+	if (!cartId) {
+		throw new ShopifyCartError('Cart ID is required for checkout', { code: 'MISSING_CART_ID' });
+	}
+
 	const formattedCartId = ensureFullCartId(cartId);
 	const query = `
     query checkoutURL($cartId: ID!) {
@@ -696,16 +830,17 @@ export const getCheckoutURL = async ({ cartId }: { cartId: string }) => {
 
 	try {
 		const data = await storefrontClient.fetch<{
-			cart: { checkoutUrl: string } | null;
+			cart: ShopifyCheckoutResponse | null;
 		}>(query, { cartId: formattedCartId }, 'getCheckoutURL');
 
 		if (!data.cart) {
-			throw new Error('Failed to get checkout URL');
+			throw new ShopifyCartError('Failed to get checkout URL - cart not found', {
+				code: 'CHECKOUT_URL_ERROR'
+			});
 		}
 
 		return data.cart;
 	} catch (error) {
-		console.error('Failed to get checkout URL:', error);
-		throw error;
+		return handleShopifyError<ShopifyCheckoutResponse>(error, 'getCheckoutURL');
 	}
 };
