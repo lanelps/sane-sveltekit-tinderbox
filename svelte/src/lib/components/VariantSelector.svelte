@@ -10,6 +10,7 @@
 	let selectedVariant = $state<ProductVariant | null>(variants?.[0] || null);
 	let quantity = $state(1);
 	let error = $state<string | null>(null);
+	let isLoading = $state(false);
 
 	// Helper function to create cart item data
 	const createCartItemData = (variant: ProductVariant): CartItem => ({
@@ -25,6 +26,7 @@
 	const addToCart = async () => {
 		if (!selectedVariant) return;
 
+		isLoading = true;
 		error = null;
 
 		try {
@@ -34,6 +36,8 @@
 		} catch (err) {
 			console.error('Failed to add item to cart:', err);
 			error = 'Failed to add item to cart. Please try again.';
+		} finally {
+			isLoading = false;
 		}
 	};
 
@@ -59,9 +63,9 @@
 
 	<button
 		onclick={addToCart}
-		disabled={!selectedVariant?.store.inventory.isAvailable || cart.isLoading}
+		disabled={!selectedVariant?.store.inventory.isAvailable || cart.isLoading || isLoading}
 	>
-		{cart.isLoading ? 'Adding...' : 'Add to Cart'}
+		{isLoading ? 'Adding...' : 'Add to Cart'}
 	</button>
 
 	{#if error}
