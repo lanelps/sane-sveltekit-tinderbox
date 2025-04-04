@@ -27,7 +27,7 @@
 
 	<nav class="sm-t:flex gap-x-gm sm-t:gap-x-gd hidden">
 		<ul class="flex w-full gap-x-8">
-			{#each links as link (link._key)}
+			{#each links as link}
 				<li>
 					<Link {link} />
 				</li>
@@ -46,7 +46,7 @@
 		aria-hidden={!nav.isOpen}
 	>
 		<ul class="flex w-full flex-col justify-between gap-x-8">
-			{#each links as link (link._key)}
+			{#each links as link}
 				<li>
 					<Link {link} />
 				</li>
