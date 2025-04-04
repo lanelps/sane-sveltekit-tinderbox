@@ -23,10 +23,7 @@
 {#if img}
 	<figure class={twMerge('relative w-full', className)}>
 		<img
-			class={[
-				'relative h-auto w-full transition-opacity duration-700',
-				loaded ? 'opacity-100' : 'opacity-0'
-			]}
+			class="relative h-auto w-full transition-opacity duration-700"
 			{loading}
 			fetchPriority={loading === 'eager' ? 'high' : undefined}
 			src={img.src}
