@@ -41,11 +41,19 @@
 <svelte:window onkeydown={handleKeyDown} onclick={handleClickOutside} />
 
 <div
+	class={[
+		'pointer-events-none fixed inset-0 z-50 h-screen w-screen bg-black/50 transition-opacity',
+		cart.isOpen ? 'opacity-100' : 'opacity-0'
+	]}
+	aria-hidden="true"
+></div>
+
+<div
 	bind:this={cartRef}
-	class={twMerge(
+	class={[
 		'fixed top-0 right-0 z-50 h-full w-96 bg-gray-100 p-4 pb-22 shadow-lg transition-transform',
 		cart.isOpen ? 'translate-x-0' : 'translate-x-full'
-	)}
+	]}
 >
 	{#if cart.items.length === 0}
 		<p class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-bold uppercase">
