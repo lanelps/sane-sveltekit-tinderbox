@@ -159,6 +159,18 @@ const createCart = (): CartStore => {
 	const updateQuantity = async (variantId: string, newQuantity: number): Promise<void> => {
 		if (newQuantity < 1) return;
 
+		// Helper function to find a matching local item for a Shopify line
+		const findMatchingLocalItem = (shopifyLineItem: ShopifyCartLineItem): Partial<CartItem> => {
+			// Find the item in our local cart that matches this Shopify line
+			const localItem = items.find(
+				(item) =>
+					item.variantId === shopifyLineItem.merchandise.id || item.id === shopifyLineItem.id
+			);
+
+			// Return the local item if found, otherwise an empty object
+			return localItem || {};
+		};
+
 		try {
 			isLoading = true;
 
@@ -173,10 +185,25 @@ const createCart = (): CartStore => {
 					quantity: newQuantity
 				});
 
-				// Update local cart state
-				items = items.map((item) =>
-					item.variantId === variantId ? { ...item, quantity: newQuantity } : item
-				);
+				// Update local cart state using response from Shopify
+				if (response && response.cart && response.cart.lines) {
+					// Use the Shopify response to update the entire cart
+					items = response.cart.lines.edges.map(({ node }) => ({
+						...findMatchingLocalItem(node),
+						id: node.id,
+						variantId: node.merchandise.id,
+						quantity: node.quantity,
+						title: node.merchandise.product.title,
+						variantTitle: node.merchandise.title,
+						price: parseFloat(node.merchandise.priceV2.amount),
+						image: node.merchandise.image?.originalSrc || ''
+					}));
+				} else {
+					// Fallback to local update if response is incomplete
+					items = items.map((item) =>
+						item.variantId === variantId ? { ...item, quantity: newQuantity } : item
+					);
+				}
 			} else {
 				// Just update the local state if no Shopify connection
 				items = items.map((item) =>

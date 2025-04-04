@@ -72,7 +72,7 @@ export interface ShopifyCart {
 
 export interface ShopifyCartResponse<T = ShopifyCart> {
 	cart: T;
-	userErrors: {
+	userErrors?: {
 		field: string;
 		message: string;
 	}[];

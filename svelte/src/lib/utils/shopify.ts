@@ -180,7 +180,7 @@ export const storefrontClient = {
 				});
 			}
 
-			const responseData: { data?: T; errors?: Array<{ message: string }> } = await response.json();
+			const responseData: { data?: T; errors?: { message: string }[] } = await response.json();
 
 			if (responseData.errors && responseData.errors.length > 0) {
 				const errorMessages = responseData.errors.map((e) => e.message).join(', ');
@@ -248,12 +248,12 @@ export const createCart = async (): Promise<ShopifyCart> => {
 			cartCreate: {
 				cart: ShopifyCart & {
 					lines: {
-						edges: Array<{
+						edges: {
 							node: ShopifyCartLineItem;
-						}>;
+						}[];
 					};
 				};
-				userErrors: Array<{ field: string; message: string }>;
+				userErrors: { field: string; message: string }[];
 			};
 		};
 
@@ -416,7 +416,7 @@ export const addToCart = async ({
 			'addToCart'
 		);
 
-		if (data.cartLinesAdd.userErrors?.length > 0) {
+		if (data?.cartLinesAdd?.userErrors && data.cartLinesAdd.userErrors.length > 0) {
 			const errorMessages = data.cartLinesAdd.userErrors.map((err) => err.message).join(', ');
 			throw new ShopifyCartError(`Add to cart failed: ${errorMessages}`, {
 				code: 'ADD_TO_CART_ERROR'
@@ -510,7 +510,7 @@ export const updateCart = async ({
 			'updateCart'
 		);
 
-		if (data.cartLinesUpdate.userErrors?.length > 0) {
+		if (data?.cartLinesUpdate?.userErrors && data.cartLinesUpdate.userErrors.length > 0) {
 			const errorMessages = data.cartLinesUpdate.userErrors.map((err) => err.message).join(', ');
 			throw new ShopifyCartError(`Update cart failed: ${errorMessages}`, {
 				code: 'UPDATE_CART_ERROR'
@@ -595,7 +595,7 @@ export const removeLineItem = async ({
 			'removeLineItem'
 		);
 
-		if (data.cartLinesRemove.userErrors?.length > 0) {
+		if (data?.cartLinesRemove?.userErrors && data.cartLinesRemove.userErrors.length > 0) {
 			const errorMessages = data.cartLinesRemove.userErrors.map((err) => err.message).join(', ');
 			throw new ShopifyCartError(`Remove line item failed: ${errorMessages}`, {
 				code: 'REMOVE_ITEM_ERROR'
@@ -690,7 +690,7 @@ export const removeLineItems = async ({
 			'removeLineItems'
 		);
 
-		if (data.cartLinesRemove.userErrors?.length > 0) {
+		if (data?.cartLinesRemove?.userErrors && data.cartLinesRemove.userErrors.length > 0) {
 			const errorMessages = data.cartLinesRemove.userErrors.map((err) => err.message).join(', ');
 			throw new ShopifyCartError(`Remove line items failed: ${errorMessages}`, {
 				code: 'REMOVE_ITEMS_ERROR'
@@ -771,15 +771,15 @@ export const fetchProduct = async (handle: string): Promise<ShopifyProduct> => {
 			material: ShopifyMetafield | null;
 			shipping: ShopifyMetafield | null;
 			images: {
-				edges: Array<{
+				edges: {
 					node: ShopifyProductImage;
-				}>;
+				}[];
 			};
 			options: ShopifyProductOption[];
 			variants: {
-				edges: Array<{
+				edges: {
 					node: ShopifyProductVariant;
-				}>;
+				}[];
 			};
 		} | null;
 	}
