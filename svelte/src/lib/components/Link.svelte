@@ -33,7 +33,7 @@
 
 	// Configuration object that defines how different types of links should be rendered
 	const linkConfig = {
-		string: (link: string) => ({ href: `/${link}/` }),
+		string: (link: string) => ({ href: link === '/' ? link : `/${link}` }),
 		external: (link: ExternalLink) => ({
 			href: link.url,
 			target: link.newTab ? '_blank' : '_self',
@@ -42,7 +42,7 @@
 		internal: (link: InternalLink) => {
 			const typePath = shouldIncludeType(link) ? `${link.reference._type}s/` : '';
 			return {
-				href: `/${typePath}${link.reference.slug.current}/`
+				href: `/${typePath}${link.reference.slug.current}`
 			};
 		},
 		file: (link: FileLink) => ({
