@@ -87,5 +87,5 @@
 
 a,
 button {
-	@apply cursor-pointer;
+	@apply cursor-pointer transition-opacity disabled:cursor-not-allowed disabled:opacity-50;
 }
