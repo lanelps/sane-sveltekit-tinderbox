@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
 	import { twMerge } from 'tailwind-merge';
 	import type { SanityImageData } from '$lib/types';
 	import { getImageProps } from '$lib/utils/sanity/client/image';
@@ -11,12 +12,21 @@
 		maxWidth?: number;
 	}
 
+	// Use a type assertion to help TypeScript understand
+	const loadedImages = ((globalThis as any).__LOADED_IMAGES__ =
+		(globalThis as any).__LOADED_IMAGES__ || new Set<string>());
+
 	const { image, alt = '', class: className, loading = 'lazy', maxWidth }: Props = $props();
 	let img = getImageProps({ image, maxWidth });
-	let loaded = $state(false);
+	let initialLoadState = browser && img?.src ? loadedImages.has(img.src) : false;
+	let loaded = $state(initialLoadState);
 
 	const handleImageLoaded = () => {
 		loaded = true;
+		// Add to our global registry when loaded
+		if (browser && img?.src) {
+			loadedImages.add(img.src);
+		}
 	};
 </script>
 
