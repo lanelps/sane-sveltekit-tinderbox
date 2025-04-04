@@ -21,11 +21,11 @@
 		nav.close();
 	});
 
-	const siteQuery = useSiteData(data.initialSite);
-	const { data: site } = $derived($siteQuery);
+	const siteQuery = $derived(useSiteData(data.initialSite));
+	const site = $derived($siteQuery.data);
 
-	const settingsQuery = useSettingsData(data.initialSettings);
-	const { data: settings } = $derived($settingsQuery);
+	const settingsQuery = $derived(useSettingsData(data.initialSettings));
+	const settings = $derived($settingsQuery.data);
 </script>
 
 <svelte:window on:keydown={nav.close} />

@@ -1,23 +1,26 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import PageBuilder from '$lib/components/PageBuilder.svelte';
 	import VariantSelector from '$lib/components/VariantSelector.svelte';
 
 	import { useProductPage } from '$lib/utils/queryHooks';
-
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
-	const query = useProductPage(data.params.slug ?? '', data.initial);
-	const { data: product, loading, encodeDataAttribute } = $derived($query);
+	const slug = $derived(page.params.slug);
+	const query = $derived(useProductPage(slug, data.initial));
+
+	const productData = $derived($query.data);
+	const isLoading = $derived($query.loading);
 </script>
 
-{#if loading}
+{#if isLoading}
 	<p>Loading...</p>
 {:else}
-	<h1 class="text-h1">{product.store.title}</h1>
+	<h1 class="text-h1">{productData.store.title}</h1>
 
-	<VariantSelector title={product.store.title} variants={product.variants} />
+	<VariantSelector title={productData.store.title} variants={productData.variants} />
 
-	<PageBuilder sections={product.sections} />
+	<PageBuilder sections={productData.sections} />
 {/if}
