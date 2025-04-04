@@ -10,11 +10,6 @@
 	const slug = $derived(page.params.slug);
 	const query = $derived(useProjectPage(slug, data.initial));
 
-	// Access the store values reactively
-	$effect(() => {
-		console.log('Project data changed:', $query.data);
-	});
-
 	// Extract needed values with $derived for use in the template
 	const projectData = $derived($query.data);
 	const isLoading = $derived($query.loading);
