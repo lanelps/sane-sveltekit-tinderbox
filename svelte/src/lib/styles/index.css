@@ -63,26 +63,12 @@
 	animation-delay: calc(1ms * --value(integer));
 }
 
-@layer components {
-	.grid-main,
-	.grid-sub {
-		@apply gap-gm grid grid-cols-6;
-	}
+@utility grid-main {
+	@apply px-pm gap-gm sm-t:gap-gd sm-t:grid-cols-12 sm-t:px-pd grid grid-cols-6;
+}
 
-	.grid-main {
-		@apply px-pm;
-	}
-
-	@variant sm-t {
-		.grid-main,
-		.grid-sub {
-			@apply gap-gd grid grid-cols-12;
-		}
-
-		.grid-main {
-			@apply px-pd;
-		}
-	}
+@utility grid-sub {
+	@apply gap-gm sm-t:gap-gd sm-t:grid-cols-12 grid grid-cols-6;
 }
 
 a,
