@@ -20,14 +20,6 @@
 }
 
 /* Text Components */
-@layer components {
-	.text-title {
-		@apply font-main text-4xl leading-none font-bold tracking-[-0.25px] text-green-100 uppercase;
-	}
-
-	@variant sm-t {
-		.text-title {
-			@apply text-5xl;
-		}
-	}
+@utility text-title {
+	@apply font-main sm-t:text-5xl text-4xl leading-none font-bold tracking-[-0.25px] text-green-100 uppercase;
 }
