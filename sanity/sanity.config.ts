@@ -3,6 +3,7 @@ import {structureTool} from 'sanity/structure'
 import {visionTool} from '@sanity/vision'
 import {presentationTool} from 'sanity/presentation'
 import {muxInput} from 'sanity-plugin-mux-input'
+import {media} from 'sanity-plugin-media'
 
 import {schema} from './src/schemas'
 import {deskStructure} from './src/lib/desk'
@@ -35,10 +36,19 @@ export default defineConfig({
           previewUrl: {origin: previewUrl},
         })
       : null,
+    media(),
     muxInput(),
     customDocumentActions(),
     ...(isDev ? devOnlyPlugins : []),
   ].filter((plugin): plugin is PluginOptions => plugin !== null),
+
+  form: {
+    image: {
+      assetSources: (previousAssetSources: any[]) => {
+        return previousAssetSources.filter((assetSource: any) => assetSource.name === 'media')
+      },
+    },
+  },
 
   schema,
 

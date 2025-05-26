@@ -98,7 +98,7 @@ export const generateDocumentStructure = (
             ]),
           )
 
-  return divider ? [structure, S.divider()] : [structure]
+  return divider ? [structure, S.divider() as any as Divider] : [structure]
 }
 
 export const generateSingletonStructure = (
@@ -111,7 +111,7 @@ export const generateSingletonStructure = (
     .icon(icon || DocumentIcon)
     .child(S.editor().title(title).schemaType(type).documentId(type))
 
-  return divider ? [structure, S.divider()] : [structure]
+  return divider ? [structure, S.divider() as any as Divider] : [structure]
 }
 
 const generateGroupStructure = (
@@ -133,7 +133,7 @@ const generateGroupStructure = (
         ),
     )
 
-  return divider ? [structure, S.divider()] : [structure]
+  return divider ? [structure, S.divider() as any as Divider] : [structure]
 }
 
 const generateStructure = (
