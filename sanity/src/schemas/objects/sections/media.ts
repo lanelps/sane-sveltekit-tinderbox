@@ -1,8 +1,8 @@
 import {defineField, defineType} from 'sanity'
 
-export default defineType({
+export const mediaSectionType = defineType({
   name: 'media.section',
-  title: 'Media Section',
+  title: 'Media',
   type: 'object',
   fields: [
     defineField({
@@ -18,7 +18,7 @@ export default defineType({
       video: 'media.video.poster',
     },
     prepare: ({image, video}) => ({
-      title: 'Media Section',
+      title: 'Media',
       media: image || video,
     }),
   },

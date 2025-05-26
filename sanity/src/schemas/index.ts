@@ -1,48 +1,82 @@
-// singletons
-import homePage from './singletons/homePage'
-import settings from './singletons/settings'
-import site from './singletons/site'
+import type {SchemaTypeDefinition} from 'sanity'
 
-const singletons = [homePage, settings, site] as any[]
+// singletons
+import {homePageType} from './singletons/homePage'
+import {settingsType} from './singletons/settings'
+import {siteType} from './singletons/site'
+
+const singletons = [homePageType, settingsType, siteType] as any[]
 
 // documents
-import page from './documents/page'
-import project from './documents/project'
+import {collectionType} from './documents/collection'
+import {pageType} from './documents/page'
+import {productType} from './documents/product'
+import {productVariantType} from './documents/productVariant'
+import {projectType} from './documents/project'
 
-const documents = [page, project] as any[]
+const documents = [collectionType, pageType, productType, productVariantType, projectType] as any[]
 
 // sections
-import exampleSection from './sections/example'
-import mediaSection from './sections/media'
+import {exampleSectionType} from './objects/sections/example'
+import {mediaSectionType} from './objects/sections/media'
+import {productsListSectionType} from './objects/sections/productsList'
+import {projectsListSectionType} from './objects/sections/projectsList'
 
-const sections = [exampleSection, mediaSection] as any[]
-
-// objects
-import altImage from './objects/altImage'
-import link from './objects/link'
-import media from './objects/media'
-import portableText from './objects/portableText'
-import scriptInline from './objects/scriptInline'
-import scriptSrc from './objects/scriptSrc'
-import video from './objects/video'
-
-// SEO types
-import seoPage from './objects/seo/page'
-import seoSite from './objects/seo/site'
-import schema from './objects/schema'
-
-const objects = [
-  altImage,
-  link,
-  media,
-  portableText,
-  scriptInline,
-  scriptSrc,
-  video,
-  // SEO types
-  seoPage,
-  seoSite,
-  schema,
+const sections = [
+  exampleSectionType,
+  mediaSectionType,
+  productsListSectionType,
+  projectsListSectionType,
 ] as any[]
 
-export const schemaTypes = [...singletons, ...documents, ...sections, ...objects]
+// objects
+import {altImageType} from './objects/altImage'
+import {linkType} from './objects/link'
+import {mediaType} from './objects/media'
+import {portableTextType} from './objects/portableText'
+import {scriptInlineType} from './objects/scriptInline'
+import {scriptSrcType} from './objects/scriptSrc'
+
+// SEO types
+import {seoPageType} from './objects/seo/page'
+import {seoSiteType} from './objects/seo/site'
+import {schemaJSONType} from './objects/schema'
+
+const objects = [
+  altImageType,
+  linkType,
+  mediaType,
+  portableTextType,
+  scriptInlineType,
+  scriptSrcType,
+  // SEO types
+  seoPageType,
+  seoSiteType,
+  schemaJSONType,
+] as any[]
+
+import {collectionRuleType} from './objects/shopify/collectionRuleType'
+import {inventoryType} from './objects/shopify/inventoryType'
+import {optionType} from './objects/shopify/optionType'
+import {priceRangeType} from './objects/shopify/priceRangeType'
+import {productWithVariantType} from './objects/shopify/productWithVariantType'
+import {proxyStringType} from './objects/shopify/proxyStringType'
+import {shopifyCollectionType} from './objects/shopify/shopifyCollectionType'
+import {shopifyProductType} from './objects/shopify/shopifyProductType'
+import {shopifyProductVariantType} from './objects/shopify/shopifyProductVariantType'
+
+const shopify = [
+  collectionRuleType,
+  inventoryType,
+  optionType,
+  priceRangeType,
+  productWithVariantType,
+  proxyStringType,
+  shopifyCollectionType,
+  shopifyProductType,
+  shopifyProductVariantType,
+] as any[]
+
+export const schema: {types: SchemaTypeDefinition[]} = {
+  types: [...singletons, ...documents, ...sections, ...objects, ...shopify],
+}

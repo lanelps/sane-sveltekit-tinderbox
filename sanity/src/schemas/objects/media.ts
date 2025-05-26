@@ -1,7 +1,7 @@
 import {defineField, defineType} from 'sanity'
 import {PlayIcon} from '@sanity/icons'
 
-export default defineType({
+export const mediaType = defineType({
   name: 'media',
   title: 'Media',
   type: 'object',
@@ -38,7 +38,7 @@ export default defineType({
     defineField({
       name: 'video',
       title: 'Video',
-      type: 'video',
+      type: 'mux.video',
       validation: (Rule: any) =>
         Rule.custom((field: any, context: any) => {
           if (context.parent.type === 'video' && !field) {
@@ -47,9 +47,6 @@ export default defineType({
           return true
         }),
       hidden: ({parent}: any) => parent?.type !== 'video',
-      options: {
-        collapsible: false,
-      },
     }),
   ],
 

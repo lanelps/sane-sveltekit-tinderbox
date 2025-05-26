@@ -1,22 +1,14 @@
 import {defineField, defineType} from 'sanity'
 
-import sections from '../../utils/sections'
+import sections from '../objects/sections'
+import {GROUPS} from '../../constants'
 
-export default defineType({
+export const homePageType = defineType({
   name: 'homePage',
   title: 'Home',
   type: 'document',
   icon: () => `🏠`,
-  groups: [
-    {
-      name: 'content',
-      title: 'Content',
-    },
-    {
-      name: 'seo',
-      title: 'SEO',
-    },
-  ],
+  groups: GROUPS,
   fields: [
     defineField({
       name: 'title',

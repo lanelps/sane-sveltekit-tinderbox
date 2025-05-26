@@ -1,13 +1,13 @@
 import {defineCliConfig} from 'sanity/cli'
 
-const PROJECT_ID = process.env.SANITY_STUDIO_PROJECT_ID!
-const DATASET = process.env.SANITY_STUDIO_DATASET!
+const projectId = process.env.SANITY_STUDIO_PROJECT_ID!;
+const dataset = process.env.SANITY_STUDIO_STUDIO_DATASET!;
 
 export default defineCliConfig({
   api: {
-    projectId: PROJECT_ID,
-    dataset: DATASET,
+    projectId,
+    dataset
   },
   autoUpdates: true,
-  studioHost: 'boilerplate',
+  studioHost: "boilerplate",
 })
