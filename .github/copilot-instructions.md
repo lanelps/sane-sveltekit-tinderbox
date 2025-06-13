@@ -21,6 +21,8 @@ E-commerce boilerplate project with Shopify integration. Built with:
 - **CMS**: Sanity with live editing and Shopify Connect
 - **Architecture**: Monorepo with modular section-based content
 
+**Shopify Integration**: Uses **Sanity Connect for Shopify** - a Shopify app that automatically syncs product data from your Shopify store to your Sanity dataset. The product, productVariant, and collection schemas are specifically designed to match the data structure that the Shopify app syncs, allowing you to add custom fields and content to products in Sanity.
+
 ## Workspaces
 
 - `./sanity/` - Content schemas and CMS config
@@ -144,10 +146,10 @@ This directory contains the Sanity CMS configuration for the e-commerce project.
 Located in `./src/schemas/documents/`
 
 - **Page**: Generic page route for any content
-- **Product**: Shopify product integration
-- **Collection**: Shopify collection integration
+- **Product**: Shopify product integration (synced via Sanity Connect)
+- **Collection**: Shopify collection integration (synced via Sanity Connect)
 - **Project**: Portfolio/showcase projects
-- **ProductVariant**: Shopify product variant integration
+- **ProductVariant**: Shopify product variant integration (synced via Sanity Connect)
 
 ### Singletons
 
