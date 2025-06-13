@@ -2,6 +2,11 @@
 	import { page } from '$app/state';
 	import { afterNavigate } from '$app/navigation';
 	import { isPreviewing } from '@sanity/visual-editing/svelte';
+	import { gsap } from 'gsap/dist/gsap';
+	import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
+
+	// Register GSAP plugins
+	gsap.registerPlugin(ScrollTrigger);
 
 	import { nav } from '$lib/stores/nav.svelte';
 

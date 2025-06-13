@@ -1,5 +1,5 @@
 import type { PortableText } from './portableText';
-import type { Media, SanityImage } from './images';
+import type { Media } from './images';
 import type { ProjectsData, ProductsData } from './pages';
 
 // ==============================
@@ -12,23 +12,23 @@ export interface BaseSection {
 }
 
 export interface ExampleSection extends BaseSection {
-	_type: 'example.section';
+	_type: 'section.example';
 	heading: string;
 	content: PortableText;
 }
 
 export interface MediaSection extends BaseSection {
-	_type: 'media.section';
+	_type: 'section.media';
 	media: Media;
 }
 
 export interface ProjectsListSection extends BaseSection {
-	_type: 'projectsList.section';
+	_type: 'section.projectsList';
 	projects: ProjectsData;
 }
 
 export interface ProductsListSection extends BaseSection {
-	_type: 'productsList.section';
+	_type: 'section.productsList';
 	products: ProductsData<string>[];
 }
 

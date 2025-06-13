@@ -15,13 +15,13 @@
 
 {#if sections && sections.length > 0}
 	{#each sections as section (section._key)}
-		{#if section._type === 'example.section'}
+		{#if section._type === 'section.example'}
 			<ExampleSection data={section} />
-		{:else if section._type === 'media.section'}
+		{:else if section._type === 'section.media'}
 			<MediaSection data={section} />
-		{:else if section._type === 'productsList.section'}
+		{:else if section._type === 'section.productsList'}
 			<ProductsList data={section} />
-		{:else if section._type === 'projectsList.section'}
+		{:else if section._type === 'section.projectsList'}
 			<ProjectsList data={section} />
 		{/if}
 	{/each}
