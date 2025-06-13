@@ -8,6 +8,6 @@ export default defineCliConfig({
     projectId,
     dataset
   },
-  autoUpdates: true,
+  autoUpdates: false,
   studioHost: "boilerplate",
 })
