@@ -22,7 +22,10 @@ export const mediaType = defineType({
     defineField({
       name: 'image',
       title: 'Image',
-      type: 'altImage',
+      type: 'image',
+      options: {
+        hotspot: true,
+      },
       validation: (Rule: any) =>
         Rule.custom((field: any, context: any) => {
           if (context.parent.type === 'image' && !field) {
@@ -31,9 +34,6 @@ export const mediaType = defineType({
           return true
         }),
       hidden: ({parent}: any) => parent?.type !== 'image',
-      options: {
-        collapsible: false,
-      },
     }),
     defineField({
       name: 'video',

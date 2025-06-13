@@ -33,8 +33,11 @@ export const portableTextType = defineType({
       },
     }),
     // defineArrayMember({
-    //   title: "Alt Image",
-    //   type: "altImage",
+    //   title: "Image",
+    //   type: "image",
+    //   options: {
+    //     hotspot: true,
+    //   },
     // }),
   ],
 })

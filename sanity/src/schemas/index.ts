@@ -30,7 +30,6 @@ const sections = [
 ] as any[]
 
 // objects
-import {altImageType} from './objects/altImage'
 import {linkType} from './objects/link'
 import {mediaType} from './objects/media'
 import {portableTextType} from './objects/portableText'
@@ -43,7 +42,6 @@ import {seoSiteType} from './objects/seo/site'
 import {schemaJSONType} from './objects/schema'
 
 const objects = [
-  altImageType,
   linkType,
   mediaType,
   portableTextType,
